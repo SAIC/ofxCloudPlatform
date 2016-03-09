@@ -28,3 +28,5 @@
 
 #include "ofxHTTP.h"
 #include "ofx/CloudPlatform/ServiceAccount.h"
+
+namespace ofxCloudPlatform = ofx::CloudPlatform;
