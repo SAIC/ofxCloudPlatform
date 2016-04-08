@@ -26,12 +26,44 @@
 #pragma once
 
 
-#include "ofxHTTP.h"
-#include "ofx/CloudPlatform/PlatformClient.h"
-#include "ofx/CloudPlatform/ServiceAccount.h"
-#include "ofx/CloudVision/VisionRequest.h"
+#include "ofx/HTTP/JSONRequest.h"
 #include "ofx/CloudVision/VisionRequestItem.h"
 
 
-namespace ofxCloudPlatform = ofx::CloudPlatform;
-namespace ofxCloudVision = ofx::CloudVision;
+namespace ofx {
+namespace CloudVision {
+
+
+/// \brief A Google Cloud Platform Vision request.
+class VisionRequest: public HTTP::JSONRequest
+{
+public:
+    /// \brief Creates a default Vision request.
+    VisionRequest();
+
+    /// \brief Creates a Vision request with a custom endpoint URI.
+    ///
+    /// This can be used for testing against other endpoints.
+    ///
+    /// \param uri The endpoint URI to use.
+    VisionRequest(const std::string& uri);
+
+    /// \brief Destroy the VisionRequest.
+    virtual ~VisionRequest();
+
+    /// \brief Add a request item.
+    /// \param request The request item to add.
+    void addRequestItem(const RequestItem& requestItem);
+
+    /// \brief The default request URI.
+    static const std::string DEFAULT_VISION_REQUEST_URI;
+
+protected:
+    /// \brief We hide this method for data integreity.
+    void setJSON(const ofJson& json) override;
+
+};
+
+
+
+} } // namespace ofx::CloudVision

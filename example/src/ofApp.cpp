@@ -35,12 +35,8 @@ using namespace ofx;
 
 void ofApp::setup()
 {
-    auto credentials = CloudPlatform::ServiceAccountCredentials::fromFile("serviceaccount.json");
 
-    HTTP::DefaultClient client;
-    HTTP::Context context;
-
-    HTTP::BaseResponse response;
+    auto credentials = CloudPlatform::ServiceAccountCredentials::fromFile("motorola-wearables-6bc5a9f098e7.json");
 
     CloudPlatform::ServiceAccountTokenRequest request(credentials);
 
@@ -48,10 +44,16 @@ void ofApp::setup()
 
     try
     {
+        CloudPlatform::PlatformClient client;
+        HTTP::Context context;
+        HTTP::BaseResponse response;
+
         // Execute the request and get the response stream.
         std::istream& responseStream = client.execute(request,
                                                       response,
                                                       context);
+
+//        respon
 
         // Request and response headers can be examined here.
         std::stringstream ss;
@@ -62,6 +64,8 @@ void ofApp::setup()
         ofJson json;
         ss >> json;
 
+        std::cout << json.dump(4) << std::endl;
+
         token = CloudPlatform::ServiceAccountToken::fromJSON(json);
 
     }
@@ -70,13 +74,38 @@ void ofApp::setup()
         ofLogError("ofApp::setup") << "Got Exception " << exc.displayText() << " " << exc.code();
     }
 
-    HTTP::OAuth20RequestFilter oauth2(token.accessToken(), token.tokenType());
+    try
+    {
+        HTTP::Context context;
+        HTTP::BaseResponse response;
 
-    client.addRequestFilter(&oauth2);
+        CloudPlatform::PlatformClient client;
 
-    // Update it.
-    // oauth2.credentials().setBearerToken(...);
+        client.credentials().setBearerToken(token.accessToken());
+        client.credentials().setScheme(token.tokenType());
 
+        CloudVision::VisionRequest visionRequest;//("https://httpbin.org/post");
+
+        visionRequest.addRequestItem(CloudVision::RequestItem("person.jpg"));
+        
+        // Execute the request and get the response stream.
+        std::istream& responseStream = client.execute(visionRequest,
+                                                      response,
+                                                      context);
+
+        // Request and response headers can be examined here.
+        std::stringstream ss;
+
+        // Copy the output to the terminal.
+        Poco::StreamCopier::copyStream(responseStream, ss);
+
+        std::cout << ss.str() << std::endl;
+
+    }
+    catch (const Poco::Exception& exc)
+    {
+        ofLogError("ofApp::setup") << "Got Exception " << exc.displayText() << " " << exc.code();
+    }
 }
 
 

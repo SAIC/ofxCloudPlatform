@@ -1,5 +1,4 @@
 ofxCloudPlatform
-ofxGeo
 ofxHTTP
 ofxIO
 ofxMediaType

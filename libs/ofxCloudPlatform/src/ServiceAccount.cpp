@@ -217,9 +217,19 @@ ServiceAccountCredentials ServiceAccountCredentials::fromFile(const std::string 
 
     if (file.exists())
     {
-        ofJson json;
-        file >> json;
-        return fromJSON(json);
+        std::string extension = file.getExtension();
+
+        if (extension.compare("json") == 0)
+        {
+            ofJson json;
+            file >> json;
+            return fromJSON(json);
+        }
+        else
+        {
+            ofLogError("ServiceAccountCredentials::fromJSON") << "Expected .json file. " << file.path();
+            return ServiceAccountCredentials();
+        }
     }
     else
     {
@@ -307,6 +317,7 @@ uint64_t ServiceAccountToken::issuedTime() const
 {
     return _issuedTime;
 }
+    
 
 bool ServiceAccountToken::isExpired() const
 {
@@ -316,17 +327,24 @@ bool ServiceAccountToken::isExpired() const
 
 ServiceAccountToken ServiceAccountToken::fromJSON(const ofJson& json)
 {
-    auto _accessToken = json["access_token"];
-    auto _tokenType = json["token_type"];
-    auto _expiresIn = json["expires_in"];
+    auto _accessToken = json.find("access_token");
+    auto _tokenType = json.find("token_type");
+    auto _expiresIn = json.find("expires_in");
 
-    if (_accessToken.is_string() && _tokenType.is_string() && _expiresIn.is_number())
+    if (_accessToken != json.end() && _tokenType != json.end() && _expiresIn != json.end() &&
+        _accessToken->is_string() && _tokenType->is_string() && _expiresIn->is_number())
     {
-        return ServiceAccountToken(_tokenType, _accessToken, _expiresIn);
+        return ServiceAccountToken(*_tokenType, *_accessToken, *_expiresIn);
     }
     else
     {
-        ofLogError("ServiceAccountToken::fromJSON") << "Error parsing TokenJSON " << json.dump(4);
+        auto _error = json.find("error");
+        auto _errorDescription = json.find("error_description");
+
+        std::string error = (_error != json.end()) ? *_error : "Unknown error.";
+        std::string errorDescription = (_errorDescription != json.end()) ? *_errorDescription : "Unknown reason.";
+
+        ofLogError("ServiceAccountToken::fromJSON") << "Error creating Token: " << error << ". " << errorDescription;
         return ServiceAccountToken();
     }
 

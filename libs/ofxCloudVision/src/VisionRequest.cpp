@@ -23,15 +23,42 @@
 // =============================================================================
 
 
-#pragma once
-
-
-#include "ofxHTTP.h"
-#include "ofx/CloudPlatform/PlatformClient.h"
-#include "ofx/CloudPlatform/ServiceAccount.h"
 #include "ofx/CloudVision/VisionRequest.h"
-#include "ofx/CloudVision/VisionRequestItem.h"
 
 
-namespace ofxCloudPlatform = ofx::CloudPlatform;
-namespace ofxCloudVision = ofx::CloudVision;
+namespace ofx {
+namespace CloudVision {
+
+
+const std::string VisionRequest::DEFAULT_VISION_REQUEST_URI = "https://vision.googleapis.com/v1/images:annotate";
+
+
+VisionRequest::VisionRequest(): VisionRequest(DEFAULT_VISION_REQUEST_URI)
+{
+}
+
+
+VisionRequest::VisionRequest(const std::string& uri):
+    HTTP::JSONRequest(uri, Poco::Net::HTTPMessage::HTTP_1_1)
+{
+}
+
+
+VisionRequest::~VisionRequest()
+{
+}
+
+
+void VisionRequest::addRequestItem(const RequestItem& requestItem)
+{
+    _json["requests"].push_back(requestItem.json());
+}
+
+
+void VisionRequest::setJSON(const ofJson& json)
+{
+    JSONRequest::setJSON(json);
+}
+
+
+} } // namespace ofx::CloudVision

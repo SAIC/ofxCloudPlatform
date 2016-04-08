@@ -26,12 +26,27 @@
 #pragma once
 
 
-#include "ofxHTTP.h"
-#include "ofx/CloudPlatform/PlatformClient.h"
-#include "ofx/CloudPlatform/ServiceAccount.h"
-#include "ofx/CloudVision/VisionRequest.h"
-#include "ofx/CloudVision/VisionRequestItem.h"
+#include "ofx/HTTP/DefaultClient.h"
+#include "ofx/HTTP/OAuth20RequestFilter.h"
 
 
-namespace ofxCloudPlatform = ofx::CloudPlatform;
-namespace ofxCloudVision = ofx::CloudVision;
+namespace ofx {
+namespace CloudPlatform {
+
+
+class PlatformClient: public HTTP::DefaultClient
+{
+public:
+    PlatformClient();
+
+    virtual ~PlatformClient();
+
+    HTTP::OAuth20Credentials& credentials();
+
+private:
+    HTTP::OAuth20RequestFilter _oauth2Filter;
+
+};
+
+
+} } // namespace ofx::CloudPlatform

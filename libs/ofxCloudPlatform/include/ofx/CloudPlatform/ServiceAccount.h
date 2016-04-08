@@ -165,17 +165,20 @@ public:
 
     /// \brief The default scope for Google Cloud Platform requests.
     /// \sa https://www.googleapis.com/auth/cloud-platform
-    const static std::string DEFAULT_SCOPE;
+    static const std::string DEFAULT_SCOPE;
 
 };
 
 
-
+/// \brief A OAuth2.0 service account response to a token request.
 class ServiceAccountToken
 {
 public:
+    /// \brief Create an empty ServiceAccountToken.
     ServiceAccountToken();
 
+    /// \brief Create a ServiceAccountToken with the given parameters.
+    /// \param The token Type
     ServiceAccountToken(const std::string& tokenType,
                         const std::string& accessToken,
                         uint64_t expiresIn);
