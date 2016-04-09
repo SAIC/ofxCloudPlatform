@@ -35,76 +35,48 @@ using namespace ofx;
 
 void ofApp::setup()
 {
+    using namespace CloudPlatform;
+    using namespace CloudVision;
 
-    auto credentials = CloudPlatform::ServiceAccountCredentials::fromFile("motorola-wearables-6bc5a9f098e7.json");
+    auto credentials = ServiceAccountCredentials::fromFile("motorola-wearables-6bc5a9f098e7.json");
 
-    CloudPlatform::ServiceAccountTokenRequest request(credentials);
+    ServiceAccountTokenRequest request(credentials);
 
-    CloudPlatform::ServiceAccountToken token;
+    PlatformClient client;
 
-    try
+    auto response = client.request(request);
+
+    if (response->isSuccess())
     {
-        CloudPlatform::PlatformClient client;
-        HTTP::Context context;
-        HTTP::BaseResponse response;
+        ServiceAccountToken token = ServiceAccountToken::fromJSON(response->json());
 
-        // Execute the request and get the response stream.
-        std::istream& responseStream = client.execute(request,
-                                                      response,
-                                                      context);
+        std::cout << response->json().dump(4) << std::endl;
 
-//        respon
-
-        // Request and response headers can be examined here.
-        std::stringstream ss;
-
-        // Copy the output to the terminal.
-        Poco::StreamCopier::copyStream(responseStream, ss);
-
-        ofJson json;
-        ss >> json;
-
-        std::cout << json.dump(4) << std::endl;
-
-        token = CloudPlatform::ServiceAccountToken::fromJSON(json);
-
-    }
-    catch (const Poco::Exception& exc)
-    {
-        ofLogError("ofApp::setup") << "Got Exception " << exc.displayText() << " " << exc.code();
-    }
-
-    try
-    {
-        HTTP::Context context;
-        HTTP::BaseResponse response;
-
-        CloudPlatform::PlatformClient client;
-
+        PlatformClient client;
         client.credentials().setBearerToken(token.accessToken());
         client.credentials().setScheme(token.tokenType());
 
-        CloudVision::VisionRequest visionRequest;//("https://httpbin.org/post");
+        VisionRequest visionRequest;
+        visionRequest.addRequestItem(RequestItem("person.jpg"));
 
-        visionRequest.addRequestItem(CloudVision::RequestItem("person.jpg"));
-        
-        // Execute the request and get the response stream.
-        std::istream& responseStream = client.execute(visionRequest,
-                                                      response,
-                                                      context);
+        auto response = client.request(visionRequest);
 
-        // Request and response headers can be examined here.
-        std::stringstream ss;
+        if (response->isSuccess())
+        {
+            std::cout << response->json().dump(4) << std::endl;
+        }
+        else
+        {
+            ofLogError() << response->data();
 
-        // Copy the output to the terminal.
-        Poco::StreamCopier::copyStream(responseStream, ss);
-
-        std::cout << ss.str() << std::endl;
-
+            ofLogError() << response->error();
+        }
     }
-    catch (const Poco::Exception& exc)
+    else
     {
-        ofLogError("ofApp::setup") << "Got Exception " << exc.displayText() << " " << exc.code();
+        std::cout << ">>" << response->getStatus() << "<<" << std::endl;
+        ofLogError() << response->data();
+        ofLogError() << response->error();
     }
 }
 

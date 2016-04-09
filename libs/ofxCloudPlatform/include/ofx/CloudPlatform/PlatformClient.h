@@ -26,7 +26,7 @@
 #pragma once
 
 
-#include "ofx/HTTP/DefaultClient.h"
+#include "ofx/HTTP/HTTPClient.h"
 #include "ofx/HTTP/OAuth20RequestFilter.h"
 
 
@@ -34,7 +34,7 @@ namespace ofx {
 namespace CloudPlatform {
 
 
-class PlatformClient: public HTTP::DefaultClient
+class PlatformClient: public HTTP::HTTPClient
 {
 public:
     PlatformClient();
