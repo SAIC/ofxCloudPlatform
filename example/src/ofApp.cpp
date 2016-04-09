@@ -38,7 +38,7 @@ void ofApp::setup()
     using namespace CloudPlatform;
     using namespace CloudVision;
 
-    auto credentials = ServiceAccountCredentials::fromFile("motorola-wearables-6bc5a9f098e7.json");
+    auto credentials = ServiceAccountCredentials::fromFile("service-account-credentials.json");
 
     ServiceAccountTokenRequest request(credentials);
 
@@ -57,7 +57,7 @@ void ofApp::setup()
         client.credentials().setScheme(token.tokenType());
 
         VisionRequest visionRequest;
-        visionRequest.addRequestItem(RequestItem("person.jpg"));
+        visionRequest.addRequestItem(RequestItem("faulkner.jpg"));
 
         auto response = client.request(visionRequest);
 
