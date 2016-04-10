@@ -29,9 +29,10 @@
 #include "ofxHTTP.h"
 #include "ofx/CloudPlatform/PlatformClient.h"
 #include "ofx/CloudPlatform/ServiceAccount.h"
-#include "ofx/CloudVision/VisionRequest.h"
-#include "ofx/CloudVision/VisionRequestItem.h"
+#include "ofx/CloudPlatform/VisionClient.h"
+#include "ofx/CloudPlatform/VisionRequest.h"
+#include "ofx/CloudPlatform/VisionRequestItem.h"
 
 
 namespace ofxCloudPlatform = ofx::CloudPlatform;
-namespace ofxCloudVision = ofx::CloudVision;
+namespace ofxGCP = ofx::CloudPlatform;

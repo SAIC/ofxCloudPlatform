@@ -23,40 +23,43 @@
 // =============================================================================
 
 
-#include "ofx/CloudPlatform/PlatformClient.h"
+#pragma once
+
+
+#include "ofx/HTTP/BaseResponse.h"
+#include "ofx/CloudPlatform/VisionRequest.h"
+#include "ofx/HTTP/BaseClient.h"
 
 
 namespace ofx {
 namespace CloudPlatform {
 
 
-PlatformClient::PlatformClient(): PlatformClient(ServiceAccountCredentials())
+class VisionResponse: public HTTP::BufferedResponse<VisionRequest>
 {
-}
+public:
+    using BufferedResponse<VisionRequest>::BufferedResponse;
 
+    /// \brief Destroy a VisionResponse.
+    virtual ~VisionResponse();
 
-PlatformClient::PlatformClient(const ServiceAccountCredentials& credentials)
-{
-    setCredentials(credentials);
-    addRequestFilter(&_serviceAccountTokenFilter);
-}
+    static const std::string FACE_ANNOTATIONS;
+    static const std::string LANDMARK_ANNOTATIONS;
+    static const std::string LOGO_ANNOTATIONS;
+    static const std::string LABEL_ANNOTATIONS;
+    static const std::string TEXT_ANNOTATIONS;
+    static const std::string SAFE_SEARCH_ANNOTATIONS;
+    static const std::string IMAGE_PROPERTIES_ANNOTATIONS;
 
+protected:
+    virtual void bufferStream(std::istream& responseStream) override;
 
-PlatformClient::~PlatformClient()
-{
-}
+private:
 
+    friend class HTTP::BaseClient;
 
-void PlatformClient::setCredentials(const ServiceAccountCredentials& credentials)
-{
-    _serviceAccountTokenFilter.setCredentials(credentials);
-}
+};
 
-
-const ServiceAccountCredentials& PlatformClient::getCredentials() const
-{
-    return _serviceAccountTokenFilter.getCredentials();
-}
 
 
 } } // namespace ofx::CloudPlatform

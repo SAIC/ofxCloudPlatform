@@ -23,17 +23,18 @@
 // =============================================================================
 
 
-#include "ofx/CloudVision/VisionRequestItem.h"
+#include "ofx/CloudPlatform/VisionRequestItem.h"
 #include "ofx/IO/ByteBuffer.h"
 #include "ofx/IO/Base64Encoding.h"
 
 
 namespace ofx {
-namespace CloudVision {
+namespace CloudPlatform {
 
 
-const std::map<RequestItem::Feature::Type, std::string> RequestItem::Feature::TYPE_STRINGS =
+const std::map<VisionRequestItem::Feature::Type, std::string> VisionRequestItem::Feature::TYPE_STRINGS =
 {
+    { Type::TYPE_UNSPECIFIED, "TYPE_UNSPECIFIED" },
     { Type::LABEL_DETECTION, "LABEL_DETECTION" },
     { Type::TEXT_DETECTION, "TEXT_DETECTION" },
     { Type::FACE_DETECTION, "FACE_DETECTION" },
@@ -44,34 +45,40 @@ const std::map<RequestItem::Feature::Type, std::string> RequestItem::Feature::TY
 };
 
 
-RequestItem::Feature::Feature(Type type, std::size_t maxResults)
+VisionRequestItem::Feature::Feature(Type type, std::size_t maxResults)
 {
     _json["type"] = TYPE_STRINGS.find(type)->second;
     _json["maxResults"] = maxResults;
 }
 
 
-const ofJson& RequestItem::Feature::json() const
+const ofJson& VisionRequestItem::Feature::json() const
 {
     return _json;
 }
 
 
-const std::vector<RequestItem::Feature> RequestItem::DEFAULT_FEATURES =
+const std::vector<VisionRequestItem::Feature> VisionRequestItem::DEFAULT_FEATURES =
 {
+    Feature(Feature::Type::LABEL_DETECTION),
+    Feature(Feature::Type::TEXT_DETECTION),
+    Feature(Feature::Type::FACE_DETECTION),
+    Feature(Feature::Type::LANDMARK_DETECTION),
+    Feature(Feature::Type::LOGO_DETECTION),
+    Feature(Feature::Type::SAFE_SEARCH_DETECTION),
     Feature(Feature::Type::IMAGE_PROPERTIES)
 };
 
 
-RequestItem::RequestItem()
+VisionRequestItem::VisionRequestItem()
 {
 }
     
 
-RequestItem::RequestItem(const ofPixels& pixels,
-                         const std::vector<Feature>& features):
+VisionRequestItem::VisionRequestItem(const ofPixels& pixels,
+                                     const std::vector<Feature>& features):
 
-    RequestItem(pixels,
+    VisionRequestItem(pixels,
                 OF_IMAGE_FORMAT_JPEG,
                 OF_IMAGE_QUALITY_MEDIUM,
                 features)
@@ -79,40 +86,40 @@ RequestItem::RequestItem(const ofPixels& pixels,
 }
 
 
-RequestItem::RequestItem(const ofPixels& pixels,
-                         ofImageFormat format,
-                         ofImageQualityType quality,
-                         const std::vector<Feature>& features)
+VisionRequestItem::VisionRequestItem(const ofPixels& pixels,
+                                     ofImageFormat format,
+                                     ofImageQualityType quality,
+                                     const std::vector<Feature>& features)
 {
     setImage(pixels, format, quality);
     setFeatures(features);
 }
 
 
-RequestItem::RequestItem(const std::string& uri,
-                         const std::vector<Feature>& features)
+VisionRequestItem::VisionRequestItem(const std::string& uri,
+                                     const std::vector<Feature>& features)
 {
     setImage(uri);
     setFeatures(features);
 }
 
 
-RequestItem::RequestItem(const ofBuffer& buffer,
-                         const std::vector<Feature>& features)
+VisionRequestItem::VisionRequestItem(const ofBuffer& buffer,
+                                     const std::vector<Feature>& features)
 {
     setImage(buffer);
     setFeatures(features);
 }
 
 
-RequestItem::~RequestItem()
+VisionRequestItem::~VisionRequestItem()
 {
 }
 
 
-void RequestItem::setImage(const ofPixels& pixels,
-                           ofImageFormat format,
-                           ofImageQualityType quality)
+void VisionRequestItem::setImage(const ofPixels& pixels,
+                                 ofImageFormat format,
+                                 ofImageQualityType quality)
 {
     ofBuffer buffer;
     ofSaveImage(pixels, buffer, format, quality);
@@ -120,7 +127,7 @@ void RequestItem::setImage(const ofPixels& pixels,
 }
 
 
-void RequestItem::setImage(const std::string& uri)
+void VisionRequestItem::setImage(const std::string& uri)
 {
     if (uri.substr(0, 5).compare("gs://") == 0)
     {
@@ -134,20 +141,20 @@ void RequestItem::setImage(const std::string& uri)
 }
 
 
-void RequestItem::setImage(const ofBuffer& buffer)
+void VisionRequestItem::setImage(const ofBuffer& buffer)
 {
     _json["image"].clear();
     _json["image"]["content"] = IO::Base64Encoding::encode(IO::ByteBuffer(buffer));
 }
 
 
-void RequestItem::addFeature(const Feature& feature)
+void VisionRequestItem::addFeature(const Feature& feature)
 {
     _json["features"].push_back(feature.json());
 }
 
 
-void RequestItem::setFeatures(const std::vector<Feature>& features)
+void VisionRequestItem::setFeatures(const std::vector<Feature>& features)
 {
     _json["features"].clear();
 
@@ -158,7 +165,7 @@ void RequestItem::setFeatures(const std::vector<Feature>& features)
 }
 
 
-void RequestItem::addAllFeatures()
+void VisionRequestItem::addAllFeatures()
 {
     std::vector<Feature> features;
 
@@ -171,10 +178,10 @@ void RequestItem::addAllFeatures()
 }
 
 
-void RequestItem::setLatitudeLongitudeBounds(double minLatitude,
-                                             double minLongitude,
-                                             double maxLatitude,
-                                             double maxLongitude)
+void VisionRequestItem::setLatitudeLongitudeBounds(double minLatitude,
+                                                   double minLongitude,
+                                                   double maxLatitude,
+                                                   double maxLongitude)
 {
     _json["imageContext"]["latLongRect"] = {
         "minLatLng", {
@@ -188,7 +195,7 @@ void RequestItem::setLatitudeLongitudeBounds(double minLatitude,
     };
 }
 
-void RequestItem::setLanguageHints(const std::vector<std::string>& languages)
+void VisionRequestItem::setLanguageHints(const std::vector<std::string>& languages)
 {
     _json["imageContext"]["languageHints"].clear();
 
@@ -199,13 +206,13 @@ void RequestItem::setLanguageHints(const std::vector<std::string>& languages)
 }
 
 
-void RequestItem::addLanguageHint(const std::string& language)
+void VisionRequestItem::addLanguageHint(const std::string& language)
 {
     _json["imageContext"]["languageHints"].push_back(language);
 }
 
 
-const ofJson& RequestItem::json() const
+const ofJson& VisionRequestItem::json() const
 {
     return _json;
 }

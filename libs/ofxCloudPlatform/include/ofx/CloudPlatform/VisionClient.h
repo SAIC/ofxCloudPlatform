@@ -23,42 +23,33 @@
 // =============================================================================
 
 
-#include "ofx/CloudVision/VisionRequest.h"
+#pragma once
+
+
+#include "ofx/CloudPlatform/PlatformClient.h"
+#include "ofx/CloudPlatform/VisionResponse.h"
+#include "ofx/CloudPlatform/VisionRequest.h"
+#include "ofx/CloudPlatform/VisionRequestItem.h"
 
 
 namespace ofx {
-namespace CloudVision {
+namespace CloudPlatform {
 
 
-const std::string VisionRequest::DEFAULT_VISION_REQUEST_URI = "https://vision.googleapis.com/v1/images:annotate";
-
-
-VisionRequest::VisionRequest(): VisionRequest(DEFAULT_VISION_REQUEST_URI)
+/// \brief A Google Cloud Platform Vision request.
+class VisionClient: public PlatformClient
 {
-}
+public:
+    using PlatformClient::PlatformClient;
+    
+    virtual ~VisionClient();
+
+    std::unique_ptr<VisionResponse> annotate(const VisionRequestItem& item);
+    
+    std::unique_ptr<VisionResponse> annotate(const std::vector<VisionRequestItem>& items);
+
+};
 
 
-VisionRequest::VisionRequest(const std::string& uri):
-    HTTP::JSONRequest(uri, Poco::Net::HTTPMessage::HTTP_1_1)
-{
-}
 
-
-VisionRequest::~VisionRequest()
-{
-}
-
-
-void VisionRequest::addRequestItem(const RequestItem& requestItem)
-{
-    _json["requests"].push_back(requestItem.json());
-}
-
-
-void VisionRequest::setJSON(const ofJson& json)
-{
-    JSONRequest::setJSON(json);
-}
-
-
-} } // namespace ofx::CloudVision
+} } // namespace ofx::CloudPlatform

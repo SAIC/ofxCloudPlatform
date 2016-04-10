@@ -28,6 +28,7 @@
 
 #include <string>
 #include "ofConstants.h"
+#include "ofx/HTTP/OAuth20RequestFilter.h"
 #include "ofx/HTTP/PostRequest.h"
 
 
@@ -202,6 +203,40 @@ private:
     std::string _accessToken;
     uint64_t _expiresIn = 0;
     uint64_t _issuedTime = 0;
+
+};
+
+
+/// \brief A filter responsible for managing Google Platform authentication.
+///
+/// This class is thread-safe, making it possible for a single PlatformClient
+/// to be used in a multi-threaded environment.
+class ServiceAccountTokenFilter: public HTTP::AbstractRequestFilter
+{
+public:
+    ServiceAccountTokenFilter();
+    
+    ServiceAccountTokenFilter(const ServiceAccountCredentials& credentials);
+
+    virtual ~ServiceAccountTokenFilter();
+
+    void requestFilter(HTTP::BaseRequest& request,
+                       HTTP::Context& context) override;
+
+    void setCredentials(const ServiceAccountCredentials& credentials);
+
+    const ServiceAccountCredentials& getCredentials() const;
+
+    void setToken(const ServiceAccountToken& token);
+
+    const ServiceAccountToken& getToken() const;
+
+private:
+    ServiceAccountCredentials _credentials;
+
+    ServiceAccountToken _token;
+
+    mutable std::mutex _mutex;
 
 };
 

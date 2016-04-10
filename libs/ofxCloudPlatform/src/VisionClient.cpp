@@ -23,40 +23,28 @@
 // =============================================================================
 
 
-#include "ofx/CloudPlatform/PlatformClient.h"
+#include "ofx/CloudPlatform/VisionClient.h"
 
 
 namespace ofx {
 namespace CloudPlatform {
 
 
-PlatformClient::PlatformClient(): PlatformClient(ServiceAccountCredentials())
+VisionClient::~VisionClient()
 {
 }
 
 
-PlatformClient::PlatformClient(const ServiceAccountCredentials& credentials)
+std::unique_ptr<VisionResponse> VisionClient::annotate(const VisionRequestItem& item)
 {
-    setCredentials(credentials);
-    addRequestFilter(&_serviceAccountTokenFilter);
+    return executeBuffered<VisionRequest, VisionResponse>(std::make_unique<VisionRequest>(item));
 }
 
 
-PlatformClient::~PlatformClient()
+std::unique_ptr<VisionResponse> VisionClient::annotate(const std::vector<VisionRequestItem>& items)
 {
+    return executeBuffered<VisionRequest, VisionResponse>(std::make_unique<VisionRequest>(items));
 }
-
-
-void PlatformClient::setCredentials(const ServiceAccountCredentials& credentials)
-{
-    _serviceAccountTokenFilter.setCredentials(credentials);
-}
-
-
-const ServiceAccountCredentials& PlatformClient::getCredentials() const
-{
-    return _serviceAccountTokenFilter.getCredentials();
-}
-
+    
 
 } } // namespace ofx::CloudPlatform

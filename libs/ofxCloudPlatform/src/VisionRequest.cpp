@@ -23,47 +23,63 @@
 // =============================================================================
 
 
-#pragma once
-
-
-#include "ofx/HTTP/JSONRequest.h"
-#include "ofx/CloudVision/VisionRequestItem.h"
+#include "ofx/CloudPlatform/VisionRequest.h"
 
 
 namespace ofx {
-namespace CloudVision {
+namespace CloudPlatform {
 
 
-/// \brief A Google Cloud Platform Vision request.
-class VisionRequest: public HTTP::JSONRequest
+const std::string VisionRequest::DEFAULT_VISION_REQUEST_URI = "https://vision.googleapis.com/v1/images:annotate";
+
+
+VisionRequest::VisionRequest():
+    HTTP::JSONRequest(DEFAULT_VISION_REQUEST_URI,
+                      Poco::Net::HTTPMessage::HTTP_1_1)
 {
-public:
-    /// \brief Creates a default Vision request.
-    VisionRequest();
+}
 
-    /// \brief Creates a Vision request with a custom endpoint URI.
-    ///
-    /// This can be used for testing against other endpoints.
-    ///
-    /// \param uri The endpoint URI to use.
-    VisionRequest(const std::string& uri);
-
-    /// \brief Destroy the VisionRequest.
-    virtual ~VisionRequest();
-
-    /// \brief Add a request item.
-    /// \param request The request item to add.
-    void addRequestItem(const RequestItem& requestItem);
-
-    /// \brief The default request URI.
-    static const std::string DEFAULT_VISION_REQUEST_URI;
-
-protected:
-    /// \brief We hide this method for data integreity.
-    void setJSON(const ofJson& json) override;
-
-};
+    
+VisionRequest::VisionRequest(const VisionRequestItem& requestItem):
+    HTTP::JSONRequest(DEFAULT_VISION_REQUEST_URI,
+                      Poco::Net::HTTPMessage::HTTP_1_1)
+{
+    addRequestItem(requestItem);
+}
 
 
+VisionRequest::VisionRequest(const std::vector<VisionRequestItem>& requestItems):
+    HTTP::JSONRequest(DEFAULT_VISION_REQUEST_URI,
+                      Poco::Net::HTTPMessage::HTTP_1_1)
+{
+    addRequestItems(requestItems);
+}
 
-} } // namespace ofx::CloudVision
+
+VisionRequest::~VisionRequest()
+{
+}
+
+
+void VisionRequest::addRequestItem(const VisionRequestItem& requestItem)
+{
+    _json["requests"].push_back(requestItem.json());
+}
+
+
+void VisionRequest::addRequestItems(const std::vector<VisionRequestItem>& requestItems)
+{
+    for (auto& item: requestItems)
+    {
+        addRequestItem(item);
+    }
+}
+
+
+void VisionRequest::setJSON(const ofJson& json)
+{
+    JSONRequest::setJSON(json);
+}
+
+
+} } // namespace ofx::CloudPlatform

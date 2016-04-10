@@ -30,13 +30,13 @@
 
 
 namespace ofx {
-namespace CloudVision {
+namespace CloudPlatform {
 
 
 /// \brief A class representing a single request item.
 ///
 /// Vision requests can consist of multiple individual requests items.
-class RequestItem
+class VisionRequestItem
 {
 public:
     class Feature
@@ -45,6 +45,9 @@ public:
         /// \brief Image analysis features.
         enum class Type
         {
+            /// \brief An unsepecified feature type.
+            TYPE_UNSPECIFIED,
+
             /// \brief Execute Image Content Analysis on the entire image and return.
             LABEL_DETECTION,
 
@@ -93,40 +96,39 @@ public:
 
     };
 
-
     /// \brief Construct an empty request.
-    RequestItem();
+    VisionRequestItem();
 
     /// \brief Construct a request with parameters.
     /// \param pixels The pixels to set (encodes pixels with defaults).
     /// \param features The feature map to request.
-    RequestItem(const ofPixels& pixels,
-                const std::vector<Feature>& features = DEFAULT_FEATURES);
+    VisionRequestItem(const ofPixels& pixels,
+                      const std::vector<Feature>& features = DEFAULT_FEATURES);
 
     /// \brief Construct a request with parameters.
     /// \param pixels The pixels to set.
     /// \param format The image format to encode.
     /// \param quality The compression quality.
     /// \param features The feature map to request.
-    RequestItem(const ofPixels& pixels,
-                ofImageFormat format,
-                ofImageQualityType quality,
-                const std::vector<Feature>& features = DEFAULT_FEATURES);
+    VisionRequestItem(const ofPixels& pixels,
+                      ofImageFormat format,
+                      ofImageQualityType quality,
+                      const std::vector<Feature>& features = DEFAULT_FEATURES);
 
     /// \brief Construct a request with parameters.
     /// \param uri Can be file path or a Google Storage URI (e.g. gs://...).
     /// \param features The feature map to request.
-    RequestItem(const std::string& uri,
-                const std::vector<Feature>& features = DEFAULT_FEATURES);
+    VisionRequestItem(const std::string& uri,
+                      const std::vector<Feature>& features = DEFAULT_FEATURES);
 
     /// \brief Construct a request with parameters.
     /// \param buffer The buffered encoded image data.
     /// \param features The feature map to request.
-    RequestItem(const ofBuffer& buffer,
-                const std::vector<Feature>& features = DEFAULT_FEATURES);
+    VisionRequestItem(const ofBuffer& buffer,
+                      const std::vector<Feature>& features = DEFAULT_FEATURES);
 
-    /// \brief Destroy the RequestItem.
-    ~RequestItem();
+    /// \brief Destroy the VisionRequestItem.
+    ~VisionRequestItem();
 
     /// \brief Set the image from an image file.
     ///
@@ -193,9 +195,6 @@ public:
     /// \brief The defaut features.
     static const std::vector<Feature> DEFAULT_FEATURES;
 
-
-    static const std::string DEFAULT_ROOT_URL;
-
 private:
     /// \brief The json data.
     ofJson _json;
@@ -204,4 +203,4 @@ private:
 
 
 
-} } // namespace ofx::CloudVision
+} } // namespace ofx::CloudPlatform
