@@ -26,44 +26,30 @@
 #pragma once
 
 
-#include "ofx/HTTP/JSONRequest.h"
-#include "ofx/CloudVision/VisionRequestItem.h"
+#include "ofx/CloudPlatform/PlatformClient.h"
+#include "ofx/CloudPlatform/VisionResponse.h"
+#include "ofx/CloudPlatform/VisionRequest.h"
+#include "ofx/CloudPlatform/VisionRequestItem.h"
 
 
 namespace ofx {
-namespace CloudVision {
+namespace CloudPlatform {
 
 
 /// \brief A Google Cloud Platform Vision request.
-class VisionRequest: public HTTP::JSONRequest
+class VisionClient: public PlatformClient
 {
 public:
-    /// \brief Creates a default Vision request.
-    VisionRequest();
+    using PlatformClient::PlatformClient;
+    
+    virtual ~VisionClient();
 
-    /// \brief Creates a Vision request with a custom endpoint URI.
-    ///
-    /// This can be used for testing against other endpoints.
-    ///
-    /// \param uri The endpoint URI to use.
-    VisionRequest(const std::string& uri);
-
-    /// \brief Destroy the VisionRequest.
-    virtual ~VisionRequest();
-
-    /// \brief Add a request item.
-    /// \param request The request item to add.
-    void addRequestItem(const RequestItem& requestItem);
-
-    /// \brief The default request URI.
-    static const std::string DEFAULT_VISION_REQUEST_URI;
-
-protected:
-    /// \brief We hide this method for data integreity.
-    void setJSON(const ofJson& json) override;
+    std::unique_ptr<VisionResponse> annotate(const VisionRequestItem& item);
+    
+    std::unique_ptr<VisionResponse> annotate(const std::vector<VisionRequestItem>& items);
 
 };
 
 
 
-} } // namespace ofx::CloudVision
+} } // namespace ofx::CloudPlatform

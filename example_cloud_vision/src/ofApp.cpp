@@ -25,52 +25,23 @@
 
 #include "ofApp.h"
 
-#include "Poco/Crypto/RSAKey.h"
-#include "Poco/Crypto/RSADigestEngine.h"
-#include "Poco/Base64Encoder.h"
-
-
-using namespace ofx;
-
 
 void ofApp::setup()
 {
-    using namespace CloudPlatform;
-    using namespace CloudVision;
+    using namespace ofxCloudPlatform;
 
+    // Load the service account credentials. Get service account credentials
+    // here: https://cloud.google.com/vision/docs/auth-template/cloud-api-auth#set_up_a_service_account
     auto credentials = ServiceAccountCredentials::fromFile("service-account-credentials.json");
 
-    ServiceAccountTokenRequest request(credentials);
+    // Initialize a 
+    VisionClient client(credentials);
 
-    PlatformClient client;
-
-    auto response = client.request(request);
+    auto response = client.request(VisionRequestItem("faulkner.jpg"));
 
     if (response->isSuccess())
     {
-        ServiceAccountToken token = ServiceAccountToken::fromJSON(response->json());
-
         std::cout << response->json().dump(4) << std::endl;
-
-        PlatformClient client;
-        client.credentials().setBearerToken(token.accessToken());
-        client.credentials().setScheme(token.tokenType());
-
-        VisionRequest visionRequest;
-        visionRequest.addRequestItem(RequestItem("faulkner.jpg"));
-
-        auto response = client.request(visionRequest);
-
-        if (response->isSuccess())
-        {
-            std::cout << response->json().dump(4) << std::endl;
-        }
-        else
-        {
-            ofLogError() << response->data();
-
-            ofLogError() << response->error();
-        }
     }
     else
     {

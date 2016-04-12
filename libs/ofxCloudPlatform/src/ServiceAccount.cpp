@@ -27,7 +27,9 @@
 #include "ofFileUtils.h"
 #include "ofLog.h"
 #include "ofUtils.h"
+#include "ofx/HTTP/HTTPClient.h"
 #include "ofx/HTTP/JSONWebToken.h"
+#include "ofx/HTTP/OAuth20Credentials.h"
 
 
 namespace ofx {
@@ -348,6 +350,81 @@ ServiceAccountToken ServiceAccountToken::fromJSON(const ofJson& json)
         return ServiceAccountToken();
     }
 
+}
+
+
+
+ServiceAccountTokenFilter::ServiceAccountTokenFilter()
+{
+}
+
+
+ServiceAccountTokenFilter::ServiceAccountTokenFilter(const ServiceAccountCredentials& credentials):
+    _credentials(credentials)
+{
+}
+
+
+ServiceAccountTokenFilter::~ServiceAccountTokenFilter()
+{
+}
+
+
+void ServiceAccountTokenFilter::requestFilter(HTTP::BaseRequest& request,
+                                              HTTP::Context& context)
+{
+    std::unique_lock<std::mutex> lock(_mutex);
+
+    if (_token.isExpired())
+    {
+        HTTP::HTTPClient client;
+
+        auto response = client.executeBuffered(std::make_unique<ServiceAccountTokenRequest>(_credentials));
+
+        if (response->isSuccess())
+        {
+            _token = ServiceAccountToken::fromJSON(response->json());
+
+            if (_token.isExpired())
+            {
+                throw Poco::Exception("Unable to update ServiceAccountToken - token is expired.");
+            }
+        }
+        else
+        {
+            throw Poco::Exception("Unable to update ServiceAccountToken: " + response->error());
+        }
+    }
+
+    HTTP::OAuth20Credentials(_token.accessToken(),
+                             _token.tokenType()).authenticate(request);
+}
+
+void ServiceAccountTokenFilter::setCredentials(const ServiceAccountCredentials& credentials)
+{
+    std::unique_lock<std::mutex> lock(_mutex);
+    _credentials = credentials;
+}
+
+
+const ServiceAccountCredentials& ServiceAccountTokenFilter::getCredentials() const
+{
+    std::unique_lock<std::mutex> lock(_mutex);
+    return _credentials;
+}
+
+
+void ServiceAccountTokenFilter::setToken(const ServiceAccountToken& token)
+{
+    std::unique_lock<std::mutex> lock(_mutex);
+    _token = token;
+}
+
+
+const ServiceAccountToken& ServiceAccountTokenFilter::getToken() const
+{
+    std::unique_lock<std::mutex> lock(_mutex);
+    return _token;
 }
 
     

@@ -27,7 +27,8 @@
 
 
 #include "ofx/HTTP/HTTPClient.h"
-#include "ofx/HTTP/OAuth20RequestFilter.h"
+#include "ofx/HTTP/BaseResponse.h"
+#include "ofx/CloudPlatform/ServiceAccount.h"
 
 
 namespace ofx {
@@ -38,13 +39,16 @@ class PlatformClient: public HTTP::HTTPClient
 {
 public:
     PlatformClient();
+    PlatformClient(const ServiceAccountCredentials& credentials);
 
     virtual ~PlatformClient();
 
-    HTTP::OAuth20Credentials& credentials();
+    void setCredentials(const ServiceAccountCredentials& credentials);
+
+    const ServiceAccountCredentials& getCredentials() const;
 
 private:
-    HTTP::OAuth20RequestFilter _oauth2Filter;
+    ServiceAccountTokenFilter _serviceAccountTokenFilter;
 
 };
 

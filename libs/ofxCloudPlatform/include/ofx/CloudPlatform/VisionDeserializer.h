@@ -23,42 +23,35 @@
 // =============================================================================
 
 
-#include "ofx/CloudVision/VisionRequest.h"
+#pragma once
+
+
+#include "json.hpp"
+#include "ofColor.h"
+#include "ofPolyline.h"
+#include "ofLog.h"
+#include "ofx/CloudPlatform/VisionAnnotations.h"
+#include "ofx/CloudPlatform/VisionResponse.h"
 
 
 namespace ofx {
-namespace CloudVision {
+namespace CloudPlatform {
 
 
-const std::string VisionRequest::DEFAULT_VISION_REQUEST_URI = "https://vision.googleapis.com/v1/images:annotate";
-
-
-VisionRequest::VisionRequest(): VisionRequest(DEFAULT_VISION_REQUEST_URI)
+class VisionDeserializer
 {
-}
+public:
+    static bool fromJSON(const ofJson& json, ofPolyline& polyline);
+    static bool fromJSON(const ofJson& json, ofVec2f& position);
+    static bool fromJSON(const ofJson& json, ofVec3f& position);
+    static bool fromJSON(const ofJson& json, ofColor& color);
+private:
+    VisionDeserializer() = delete;
+    ~VisionDeserializer() = delete;
+    
+};
 
 
-VisionRequest::VisionRequest(const std::string& uri):
-    HTTP::JSONRequest(uri, Poco::Net::HTTPMessage::HTTP_1_1)
-{
-}
 
 
-VisionRequest::~VisionRequest()
-{
-}
-
-
-void VisionRequest::addRequestItem(const RequestItem& requestItem)
-{
-    _json["requests"].push_back(requestItem.json());
-}
-
-
-void VisionRequest::setJSON(const ofJson& json)
-{
-    JSONRequest::setJSON(json);
-}
-
-
-} } // namespace ofx::CloudVision
+} } // namespace ofx::CloudPlatform

@@ -30,9 +30,15 @@ namespace ofx {
 namespace CloudPlatform {
 
 
-PlatformClient::PlatformClient()
+PlatformClient::PlatformClient(): PlatformClient(ServiceAccountCredentials())
 {
-    addRequestFilter(&_oauth2Filter);
+}
+
+
+PlatformClient::PlatformClient(const ServiceAccountCredentials& credentials)
+{
+    setCredentials(credentials);
+    addRequestFilter(&_serviceAccountTokenFilter);
 }
 
 
@@ -41,9 +47,15 @@ PlatformClient::~PlatformClient()
 }
 
 
-HTTP::OAuth20Credentials& PlatformClient::credentials()
+void PlatformClient::setCredentials(const ServiceAccountCredentials& credentials)
 {
-    return _oauth2Filter.credentials();
+    _serviceAccountTokenFilter.setCredentials(credentials);
+}
+
+
+const ServiceAccountCredentials& PlatformClient::getCredentials() const
+{
+    return _serviceAccountTokenFilter.getCredentials();
 }
 
 
