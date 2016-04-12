@@ -77,11 +77,10 @@ VisionRequestItem::VisionRequestItem()
 
 VisionRequestItem::VisionRequestItem(const ofPixels& pixels,
                                      const std::vector<Feature>& features):
-
     VisionRequestItem(pixels,
-                OF_IMAGE_FORMAT_JPEG,
-                OF_IMAGE_QUALITY_MEDIUM,
-                features)
+                      OF_IMAGE_FORMAT_JPEG,
+                      OF_IMAGE_QUALITY_MEDIUM,
+                      features)
 {
 }
 

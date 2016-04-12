@@ -202,5 +202,4 @@ private:
 };
 
 
-
 } } // namespace ofx::CloudPlatform

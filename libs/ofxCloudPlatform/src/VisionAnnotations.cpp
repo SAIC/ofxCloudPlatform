@@ -24,69 +24,345 @@
 
 
 #include "ofx/CloudPlatform/VisionAnnotations.h"
+#include "ofx/CloudPlatform/VisionDeserializer.h"
 
 
 namespace ofx {
 namespace CloudPlatform {
 
 
-const std::map<ImageAnnotation::Likelihood, std::string> ImageAnnotation::LIKELIHOOD_STRINGS =
+const std::map<Likelihood::Type, std::string> Likelihood::LIKELIHOOD_STRINGS =
 {
-    { Likelihood::UNKNOWN, "UNKNOWN" },
-    { Likelihood::VERY_UNLIKELY, "VERY_UNLIKELY" },
-    { Likelihood::UNLIKELY, "UNLIKELY" },
-    { Likelihood::POSSIBLE, "POSSIBLE" },
-    { Likelihood::LIKELY, "LIKELY" },
-    { Likelihood::VERY_LIKELY, "VERY_LIKELY" }
+    { Type::UNKNOWN, "UNKNOWN" },
+    { Type::VERY_UNLIKELY, "VERY_UNLIKELY" },
+    { Type::UNLIKELY, "UNLIKELY" },
+    { Type::POSSIBLE, "POSSIBLE" },
+    { Type::LIKELY, "LIKELY" },
+    { Type::VERY_LIKELY, "VERY_LIKELY" }
 };
 
 
-const std::map<std::string, ImageAnnotation::Likelihood> ImageAnnotation::STRINGS_LIKELIHOOD =
+const std::map<std::string, Likelihood::Type> Likelihood::STRINGS_LIKELIHOOD =
 {
-    { "UNKNOWN", Likelihood::UNKNOWN },
-    { "VERY_UNLIKELY", Likelihood::VERY_UNLIKELY },
-    { "UNLIKELY", Likelihood::UNLIKELY,  },
-    { "POSSIBLE", Likelihood::POSSIBLE,  },
-    { "LIKELY", Likelihood::LIKELY,  },
-    { "VERY_LIKELY", Likelihood::VERY_LIKELY }
+    { "UNKNOWN", Type::UNKNOWN },
+    { "VERY_UNLIKELY", Type::VERY_UNLIKELY },
+    { "UNLIKELY", Type::UNLIKELY,  },
+    { "POSSIBLE", Type::POSSIBLE,  },
+    { "LIKELY", Type::LIKELY,  },
+    { "VERY_LIKELY", Type::VERY_LIKELY }
 };
 
 
-const std::map<ImageAnnotation::Likelihood, float> ImageAnnotation::LIKELIHOOD_VALUES =
+const std::map<Likelihood::Type, float> Likelihood::LIKELIHOOD_VALUES =
 {
-    { Likelihood::UNKNOWN, 0.0 },
-    { Likelihood::VERY_UNLIKELY, 0.0 },
-    { Likelihood::UNLIKELY, 0.25 },
-    { Likelihood::POSSIBLE, 0.5 },
-    { Likelihood::LIKELY, 0.75 },
-    { Likelihood::VERY_LIKELY, 1.0 }
+    { Type::UNKNOWN, 0.0 },
+    { Type::VERY_UNLIKELY, 0.0 },
+    { Type::UNLIKELY, 0.25 },
+    { Type::POSSIBLE, 0.5 },
+    { Type::LIKELY, 0.75 },
+    { Type::VERY_LIKELY, 1.0 }
 };
 
-ImageAnnotation::ImageAnnotation(const ofJson& json): _json(json)
+
+Likelihood::Likelihood(): Likelihood(Type::UNKNOWN)
 {
 }
 
 
-ImageAnnotation::~ImageAnnotation()
+Likelihood::Likelihood(Type type):
+    _type(type),
+    _value(LIKELIHOOD_VALUES.find(_type)->second),
+    _name(LIKELIHOOD_STRINGS.find(_type)->second)
 {
 }
 
 
-bool ImageAnnotation::isLoaded() const
+Likelihood::~Likelihood()
 {
-    return !_json.is_null();
 }
 
 
-const ofJson& ImageAnnotation::json() const
+Likelihood::Type Likelihood::type() const
 {
-    return _json;
+    return _type;
+}
+
+
+std::string Likelihood::name() const
+{
+    return _name;
+}
+
+
+float Likelihood::value() const
+{
+    return _value;
+}
+
+
+Likelihood Likelihood::fromString(const std::string& text)
+{
+    const auto& iter = STRINGS_LIKELIHOOD.find(text);
+
+    if (iter != STRINGS_LIKELIHOOD.cend())
+    {
+        return Likelihood(iter->second);
+    }
+    else
+    {
+        ofLogWarning("Likelihood::fromString") << "Unknown Likelihood: " << text;
+        return Likelihood(Type::UNKNOWN);
+    }
+}
+
+
+EntityAnnotation::EntityAnnotation()
+{
 }
 
 
 EntityAnnotation::~EntityAnnotation()
 {
 }
+
+
+std::string EntityAnnotation::mid() const
+{
+    return _mid;
+}
+
+
+std::string EntityAnnotation::locale() const
+{
+    return _locale;
+}
+
+
+std::string EntityAnnotation::description() const
+{
+    return _description;
+}
+
+
+float EntityAnnotation::score() const
+{
+    return _score;
+}
+
+
+float EntityAnnotation::confidence() const
+{
+    return _confidence;
+}
+
+
+float EntityAnnotation::topicality() const
+{
+    return _topicality;
+}
+
+
+ofPolyline EntityAnnotation::boundingPoly() const
+{
+    return _boundingPoly;
+}
+
+
+std::vector<std::pair<double, double>> EntityAnnotation::locations()
+{
+    return _locations;
+}
+
+
+std::unordered_multimap<std::string, std::string> EntityAnnotation::properties()
+{
+    return _properties;
+}
+
+
+EntityAnnotation EntityAnnotation::fromJSON(const ofJson& json)
+{
+    EntityAnnotation annotation;
+
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+
+        if (key == "mid") annotation._mid = value;
+        else if (key == "locale") annotation._locale = value;
+        else if (key == "description") annotation._description = value;
+        else if (key == "score") annotation._score = value;
+        else if (key == "confidence") annotation._score = value;
+        else if (key == "topicality") annotation._topicality = value;
+        else if (key == "boundingPoly") VisionDeserializer::fromJSON(value, annotation._boundingPoly);
+        else if (key == "locations")
+        {
+            for (const auto& location: value)
+            {
+                double latitude = location["latLng"]["latitude"];
+                double longitude = location["latLng"]["longitude"];
+                annotation._locations.push_back(std::make_pair(latitude, longitude));
+            }
+        }
+        else if (key == "properties")
+        {
+            for (const auto& nameValue: value)
+            {
+                annotation._properties.insert(std::make_pair<std::string, std::string>(nameValue["name"], nameValue["value"]));
+            }
+        }
+        else ofLogWarning("EntityAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+
+        ++iter;
+    }
+
+    return annotation;
+}
+
+
+FaceAnnotation::Landmark::Landmark()
+{
+}
+
+
+FaceAnnotation::Landmark::Landmark(Type type, const ofVec3f& position):
+    _type(type),
+    _name(LANDMARK_TYPE_STRINGS.find(Landmark::Type::UNKNOWN_LANDMARK)->second),
+    _position(position)
+{
+}
+    
+
+FaceAnnotation::Landmark::Type FaceAnnotation::Landmark::type() const
+{
+    return _type;
+}
+
+
+std::string FaceAnnotation::Landmark::name() const
+{
+    return _name;
+}
+
+
+ofVec3f FaceAnnotation::Landmark::position() const
+{
+    return _position;
+}
+
+
+FaceAnnotation::Landmark FaceAnnotation::Landmark::fromJSON(const ofJson& json)
+{
+    FaceAnnotation::Landmark landmark;
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+        if (key == "type")
+        {
+            const auto& iter = STRINGS_LANDMARK_TYPE.find(value);
+
+            if (iter != STRINGS_LANDMARK_TYPE.cend())
+            {
+                landmark._type = iter->second;
+                landmark._name = iter->first;
+            }
+            else
+            {
+                landmark._type = Landmark::Type::UNKNOWN_LANDMARK;
+                landmark._name = LANDMARK_TYPE_STRINGS.find(Landmark::Type::UNKNOWN_LANDMARK)->second;
+                ofLogWarning("FaceAnnotation::Landmark::fromJSON") << "Unknown Landmark Type: " << value;
+            }
+        }
+        else if (key == "position") VisionDeserializer::fromJSON(value, landmark._position);
+        else ofLogWarning("FaceAnnotation::Landmark::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+        ++iter;
+    }
+    return landmark;
+}
+
+
+const std::map<FaceAnnotation::Landmark::Type, std::size_t> FaceAnnotation::Landmark::LANDMARK_TYPE_INDEX =
+{
+    { Type::UNKNOWN_LANDMARK, 0 },
+    { Type::LEFT_EYE, 1 },
+    { Type::RIGHT_EYE, 2 },
+    { Type::LEFT_OF_LEFT_EYEBROW, 3 },
+    { Type::RIGHT_OF_LEFT_EYEBROW, 4 },
+    { Type::LEFT_OF_RIGHT_EYEBROW, 5 },
+    { Type::RIGHT_OF_RIGHT_EYEBROW, 6 },
+    { Type::MIDPOINT_BETWEEN_EYES, 7 },
+    { Type::NOSE_TIP, 8 },
+    { Type::UPPER_LIP, 9 },
+    { Type::LOWER_LIP, 10 },
+    { Type::MOUTH_LEFT, 11 },
+    { Type::MOUTH_RIGHT, 12 },
+    { Type::MOUTH_CENTER, 13 },
+    { Type::NOSE_BOTTOM_RIGHT, 14 },
+    { Type::NOSE_BOTTOM_LEFT, 15 },
+    { Type::NOSE_BOTTOM_CENTER, 16 },
+    { Type::LEFT_EYE_TOP_BOUNDARY, 17 },
+    { Type::LEFT_EYE_RIGHT_CORNER, 18 },
+    { Type::LEFT_EYE_BOTTOM_BOUNDARY, 19 },
+    { Type::LEFT_EYE_LEFT_CORNER, 20 },
+    { Type::RIGHT_EYE_TOP_BOUNDARY, 21 },
+    { Type::RIGHT_EYE_RIGHT_CORNER, 22 },
+    { Type::RIGHT_EYE_BOTTOM_BOUNDARY, 23 },
+    { Type::RIGHT_EYE_LEFT_CORNER, 24 },
+    { Type::LEFT_EYEBROW_UPPER_MIDPOINT, 25 },
+    { Type::RIGHT_EYEBROW_UPPER_MIDPOINT, 26 },
+    { Type::LEFT_EAR_TRAGION, 27 },
+    { Type::RIGHT_EAR_TRAGION, 28 },
+    { Type::LEFT_EYE_PUPIL, 29 },
+    { Type::RIGHT_EYE_PUPIL, 30 },
+    { Type::FOREHEAD_GLABELLA, 31 },
+    { Type::CHIN_GNATHION, 32 },
+    { Type::CHIN_LEFT_GONION, 33 },
+    { Type::CHIN_RIGHT_GONION, 34 }
+};
+
+
+const std::map<std::size_t, FaceAnnotation::Landmark::Type> FaceAnnotation::Landmark::INDEX_LANDMARK_TYPE =
+{
+    { 0, Type::UNKNOWN_LANDMARK },
+    { 1, Type::LEFT_EYE },
+    { 2, Type::RIGHT_EYE },
+    { 3, Type::LEFT_OF_LEFT_EYEBROW },
+    { 4, Type::RIGHT_OF_LEFT_EYEBROW },
+    { 5, Type::LEFT_OF_RIGHT_EYEBROW },
+    { 6, Type::RIGHT_OF_RIGHT_EYEBROW },
+    { 7, Type::MIDPOINT_BETWEEN_EYES },
+    { 8, Type::NOSE_TIP },
+    { 9, Type::UPPER_LIP },
+    { 10, Type::LOWER_LIP },
+    { 11, Type::MOUTH_LEFT },
+    { 12, Type::MOUTH_RIGHT },
+    { 13, Type::MOUTH_CENTER },
+    { 14, Type::NOSE_BOTTOM_RIGHT },
+    { 15, Type::NOSE_BOTTOM_LEFT },
+    { 16, Type::NOSE_BOTTOM_CENTER },
+    { 17, Type::LEFT_EYE_TOP_BOUNDARY },
+    { 18, Type::LEFT_EYE_RIGHT_CORNER },
+    { 19, Type::LEFT_EYE_BOTTOM_BOUNDARY },
+    { 20, Type::LEFT_EYE_LEFT_CORNER },
+    { 21, Type::RIGHT_EYE_TOP_BOUNDARY },
+    { 22, Type::RIGHT_EYE_RIGHT_CORNER },
+    { 23, Type::RIGHT_EYE_BOTTOM_BOUNDARY },
+    { 24, Type::RIGHT_EYE_LEFT_CORNER },
+    { 25, Type::LEFT_EYEBROW_UPPER_MIDPOINT },
+    { 26, Type::RIGHT_EYEBROW_UPPER_MIDPOINT },
+    { 27, Type::LEFT_EAR_TRAGION },
+    { 28, Type::RIGHT_EAR_TRAGION },
+    { 29, Type::LEFT_EYE_PUPIL },
+    { 30, Type::RIGHT_EYE_PUPIL },
+    { 31, Type::FOREHEAD_GLABELLA },
+    { 32, Type::CHIN_GNATHION },
+    { 33, Type::CHIN_LEFT_GONION },
+    { 34, Type::CHIN_RIGHT_GONION }
+};
 
 
 const std::map<std::string, FaceAnnotation::Landmark::Type> FaceAnnotation::Landmark::STRINGS_LANDMARK_TYPE =
@@ -168,6 +444,7 @@ const std::map<FaceAnnotation::Landmark::Type, std::string> FaceAnnotation::Land
     { Type::CHIN_RIGHT_GONION, "CHIN_RIGHT_GONION" }
 };
 
+
 const std::map<FaceAnnotation::Landmark::Type, std::string> FaceAnnotation::Landmark::LANDMARK_TYPE_DESCRIPTIONS =
 {
     { Type::UNKNOWN_LANDMARK, "Unknown face landmark detected. Should not be filled." },
@@ -208,28 +485,148 @@ const std::map<FaceAnnotation::Landmark::Type, std::string> FaceAnnotation::Land
 };
 
 
+FaceAnnotation::FaceAnnotation()
+{
+}
+
 
 FaceAnnotation::~FaceAnnotation()
 {
 }
 
 
-LandmarkAnnotation::~LandmarkAnnotation()
+ofPolyline FaceAnnotation::boundingPoly() const
 {
+    return _boundingPoly;
 }
 
 
-LogoAnnotation::~LogoAnnotation()
+ofPolyline FaceAnnotation::fdBoundingPoly() const
 {
+    return _fdBoundingPoly;
 }
 
 
-LabelAnnotation::~LabelAnnotation()
+std::vector<FaceAnnotation::Landmark> FaceAnnotation::landmarks() const
 {
+    return _landmarks;
 }
 
 
-TextAnnotation::~TextAnnotation()
+float FaceAnnotation::rollAngle() const
+{
+    return _rollAngle;
+}
+
+
+float FaceAnnotation::panAngle() const
+{
+    return _panAngle;
+}
+
+    
+float FaceAnnotation::tiltAngle() const
+{
+    return _tiltAngle;
+}
+
+
+float FaceAnnotation::detectionConfidence() const
+{
+    return _detectionConfidence;
+}
+
+
+float FaceAnnotation::landmarkingConfidence() const
+{
+    return _landmarkingConfidence;
+}
+
+
+Likelihood FaceAnnotation::joyLikelihood() const
+{
+    return _joyLikelihood;
+}
+
+
+Likelihood FaceAnnotation::sorrowLikelihood() const
+{
+    return _sorrowLikelihood;
+}
+
+
+Likelihood FaceAnnotation::angerLikelihood() const
+{
+    return _angerLikelihood;
+}
+
+
+Likelihood FaceAnnotation::surpriseLikelihood() const
+{
+    return _surpriseLikelihood;
+}
+
+
+Likelihood FaceAnnotation::underExposedLikelihood() const
+{
+    return _underExposedLikelihood;
+}
+
+
+Likelihood FaceAnnotation::blurredLikelihood() const
+{
+    return _blurredLikelihood;
+}
+
+
+Likelihood FaceAnnotation::headwearLikelihood() const
+{
+    return _headwearLikelihood;
+}
+
+
+FaceAnnotation FaceAnnotation::fromJSON(const ofJson& json)
+{
+    FaceAnnotation annotation;
+
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+
+        if (key == "boundingPoly") VisionDeserializer::fromJSON(value, annotation._boundingPoly);
+        else if (key == "fdBoundingPoly") VisionDeserializer::fromJSON(value, annotation._fdBoundingPoly);
+        else if (key == "landmarks")
+        {
+            std::vector<FaceAnnotation::Landmark> landmarks;
+
+            for (const auto& landmark : value)
+                landmarks.push_back(FaceAnnotation::Landmark::fromJSON(landmark));
+
+            annotation._landmarks = landmarks;
+        }
+        else if (key == "rollAngle") annotation._rollAngle = value;
+        else if (key == "panAngle") annotation._panAngle = value;
+        else if (key == "tiltAngle") annotation._tiltAngle = value;
+        else if (key == "detectionConfidence") annotation._detectionConfidence = value;
+        else if (key == "landmarkingConfidence") annotation._landmarkingConfidence = value;
+        else if (key == "joyLikelihood") annotation._joyLikelihood = Likelihood::fromString(value);
+        else if (key == "sorrowLikelihood") annotation._sorrowLikelihood = Likelihood::fromString(value);
+        else if (key == "angerLikelihood") annotation._angerLikelihood = Likelihood::fromString(value);
+        else if (key == "surpriseLikelihood") annotation._surpriseLikelihood = Likelihood::fromString(value);
+        else if (key == "underExposedLikelihood") annotation._underExposedLikelihood = Likelihood::fromString(value);
+        else if (key == "blurredLikelihood") annotation._blurredLikelihood = Likelihood::fromString(value);
+        else if (key == "headwearLikelihood") annotation._headwearLikelihood = Likelihood::fromString(value);
+        else ofLogWarning("FaceAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+        ++iter;
+    }
+
+    return annotation;
+}
+
+
+SafeSearchAnnotation::SafeSearchAnnotation()
 {
 }
 
@@ -239,8 +636,136 @@ SafeSearchAnnotation::~SafeSearchAnnotation()
 }
 
 
+Likelihood SafeSearchAnnotation::adult() const
+{
+    return _adult;
+}
+
+
+Likelihood SafeSearchAnnotation::spoof() const
+{
+    return _spoof;
+}
+
+
+Likelihood SafeSearchAnnotation::medical() const
+{
+    return _medical;
+}
+
+
+Likelihood SafeSearchAnnotation::violence() const
+{
+    return _violence;
+}
+
+
+SafeSearchAnnotation SafeSearchAnnotation::fromJSON(const ofJson& json)
+{
+    SafeSearchAnnotation annotation;
+
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+
+        if (key == "adult") annotation._adult = Likelihood::fromString(value);
+        else if (key == "spoof") annotation._spoof = Likelihood::fromString(value);
+        else if (key == "medical") annotation._medical = Likelihood::fromString(value);
+        else if (key == "violence") annotation._violence = Likelihood::fromString(value);
+        else ofLogWarning("SafeSearchAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+        ++iter;
+    }
+
+    return annotation;
+}
+
+
+ColorInfo::ColorInfo()
+{
+}
+
+
+ColorInfo::~ColorInfo()
+{
+}
+
+ofColor ColorInfo::color() const
+{
+    return _color;
+}
+
+
+float ColorInfo::score() const
+{
+    return _score;
+}
+
+
+float ColorInfo::pixelFraction() const
+{
+    return _pixelFraction;
+}
+
+
+ColorInfo ColorInfo::fromJSON(const ofJson& json)
+{
+    ColorInfo colorInfo;
+
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+
+        if (key == "color") VisionDeserializer::fromJSON(value, colorInfo._color);
+        else if (key == "score") colorInfo._score = value;
+        else if (key == "pixelFraction") colorInfo._pixelFraction = value;
+        else ofLogWarning("ColorInfo::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+        ++iter;
+    }
+
+    return colorInfo;
+}
+
+
+
+ImagePropertiesAnnotation::ImagePropertiesAnnotation()
+{
+}
+
+
 ImagePropertiesAnnotation::~ImagePropertiesAnnotation()
 {
+}
+
+
+std::vector<ColorInfo> ImagePropertiesAnnotation::dominantColors() const
+{
+    return _dominantColors;
+}
+
+
+ImagePropertiesAnnotation ImagePropertiesAnnotation::fromJSON(const ofJson& json)
+{
+    ImagePropertiesAnnotation annotation;
+
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+
+        if (key == "dominantColors")
+        {
+            for (const auto& color: value["colors"]) annotation._dominantColors.push_back(ColorInfo::fromJSON(color));
+        }
+        else ofLogWarning("ImagePropertiesAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+        ++iter;
+    }
+
+    return annotation;
 }
 
 

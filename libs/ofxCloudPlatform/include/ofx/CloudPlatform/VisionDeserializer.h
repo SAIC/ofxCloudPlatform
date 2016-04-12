@@ -26,16 +26,32 @@
 #pragma once
 
 
-#include "ofxHTTP.h"
-#include "ofx/CloudPlatform/PlatformClient.h"
-#include "ofx/CloudPlatform/ServiceAccount.h"
+#include "json.hpp"
+#include "ofColor.h"
+#include "ofPolyline.h"
+#include "ofLog.h"
 #include "ofx/CloudPlatform/VisionAnnotations.h"
-#include "ofx/CloudPlatform/VisionClient.h"
-#include "ofx/CloudPlatform/VisionDebug.h"
-#include "ofx/CloudPlatform/VisionDeserializer.h"
 #include "ofx/CloudPlatform/VisionResponse.h"
-#include "ofx/CloudPlatform/VisionRequest.h"
-#include "ofx/CloudPlatform/VisionRequestItem.h"
 
 
-namespace ofxCloudPlatform = ofx::CloudPlatform;
+namespace ofx {
+namespace CloudPlatform {
+
+
+class VisionDeserializer
+{
+public:
+    static bool fromJSON(const ofJson& json, ofPolyline& polyline);
+    static bool fromJSON(const ofJson& json, ofVec2f& position);
+    static bool fromJSON(const ofJson& json, ofVec3f& position);
+    static bool fromJSON(const ofJson& json, ofColor& color);
+private:
+    VisionDeserializer() = delete;
+    ~VisionDeserializer() = delete;
+    
+};
+
+
+
+
+} } // namespace ofx::CloudPlatform
