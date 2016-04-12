@@ -30,6 +30,8 @@ void ofApp::setup()
 {
     using namespace ofxCloudPlatform;
 
+    image.load("faulkner.jpg");
+
     // Load the service account credentials. Get service account credentials
     // here: https://cloud.google.com/vision/docs/auth-template/cloud-api-auth#set_up_a_service_account
     auto credentials = ServiceAccountCredentials::fromFile("service-account-credentials.json");
@@ -37,11 +39,11 @@ void ofApp::setup()
     // Initialize a 
     VisionClient client(credentials);
 
-    auto response = client.request(VisionRequestItem("faulkner.jpg"));
+    auto response = client.annotate(VisionRequestItem(image.getPixels()));
 
     if (response->isSuccess())
     {
-        std::cout << response->json().dump(4) << std::endl;
+        annotations = response->responses()[0];
     }
     else
     {
@@ -59,6 +61,8 @@ void ofApp::update()
 
 void ofApp::draw()
 {
+    image.draw(0, 0);
+    ofxCloudPlatform::VisionDebug::draw(annotations);
 }
 
 

@@ -38,5 +38,9 @@ public:
     void draw();
 
     void keyPressed(int key);
-    
+
+    ofImage image;
+    ofxCloudPlatform::AnnotateImageResponse annotations;
+    ofxCloudPlatform::VisionClient client;
+
 };
