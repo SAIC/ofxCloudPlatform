@@ -48,7 +48,7 @@ void ofApp::setup()
     else
     {
         std::cout << ">>" << response->getStatus() << "<<" << std::endl;
-        ofLogError() << response->data();
+        ofLogError() << response->getBuffer();
         ofLogError() << response->error();
     }
 }

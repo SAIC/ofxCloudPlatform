@@ -383,7 +383,8 @@ void ServiceAccountTokenFilter::requestFilter(HTTP::BaseRequest& request,
 
         if (response->isSuccess())
         {
-            _token = ServiceAccountToken::fromJSON(response->json());
+            ofJson json = ofJson::parse(response->getBuffer());
+            _token = ServiceAccountToken::fromJSON(json);
 
             if (_token.isExpired())
             {

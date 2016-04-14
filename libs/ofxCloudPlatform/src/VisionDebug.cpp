@@ -76,7 +76,16 @@ void VisionDebug::draw(const std::string& label,
 
 void VisionDebug::draw(const FaceAnnotation::Landmark& landmark)
 {
-    ofDrawBitmapStringHighlight(landmark.name(), landmark.position(), ofColor(0, 0), ofColor(0, 80));
+    ofColor background= ofColor(0, 80);
+    ofColor foreground = ofColor(0, 0);
+
+    if (ofVec2f(ofGetMouseX(), ofGetMouseY()).distance(landmark.position()) < 5)
+    {
+        foreground = ofColor(255);
+        background = ofColor(0);
+    }
+
+    ofDrawBitmapStringHighlight(landmark.name(), landmark.position(), foreground, background);
     ofNoFill();
     ofDrawEllipse(landmark.position().x, landmark.position().y, 10, 10);
 }
@@ -108,7 +117,7 @@ void VisionDebug::draw(const FaceAnnotation& annotation)
     {
         ofPushMatrix();
         ofPushStyle();
-        ofTranslate(r.x, r.y);
+        ofTranslate(ofGetMouseX(), ofGetMouseY());
 
         int height = 25;
         int yPosition = 10;

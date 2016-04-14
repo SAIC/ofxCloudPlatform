@@ -77,7 +77,11 @@ public:
     static std::vector<AnnotateImageResponse> fromJSON(const ofJson& json);
 
 protected:
-    virtual void bufferStream(std::istream& responseStream) override;
+    virtual void parseBuffer() override;
+
+    /// \brief Subclasses can further parse JSON data.
+    /// \param json The JSON Data to parse.
+    virtual void parseJSON(const ofJson& json);
 
 private:
     std::vector<AnnotateImageResponse> _responses;

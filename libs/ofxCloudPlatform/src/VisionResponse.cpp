@@ -146,8 +146,6 @@ std::vector<AnnotateImageResponse> VisionResponse::responses() const
 
 std::vector<AnnotateImageResponse> VisionResponse::fromJSON(const ofJson& json)
 {
-    cout << json.dump(4) << endl;
-
     std::vector<AnnotateImageResponse> responses;
 
     auto iter = json.cbegin();
@@ -158,7 +156,6 @@ std::vector<AnnotateImageResponse> VisionResponse::fromJSON(const ofJson& json)
 
         if (key == "responses")
         {
-            std::cout << "IN HERE" << endl;
             for (const auto& response: value)
             {
                 responses.push_back(AnnotateImageResponse::fromJSON(response));
@@ -174,11 +171,25 @@ std::vector<AnnotateImageResponse> VisionResponse::fromJSON(const ofJson& json)
 
 
 
-void VisionResponse::bufferStream(std::istream& responseStream)
+void VisionResponse::parseBuffer()
 {
-    HTTP::BufferedResponse<VisionRequest>::bufferStream(responseStream);
+    ofJson json;
 
-    _responses = fromJSON(json());
+    try
+    {
+        json = ofJson::parse(HTTP::BufferedResponse<VisionRequest>::getBuffer());
+        parseJSON(json);
+    }
+    catch (const std::exception& exc)
+    {
+        ofLogError("VisionResponse::parseBuffer") << "Unable to interpret data as json: " << exc.what();
+    }
+
+}
+
+void VisionResponse::parseJSON(const ofJson& json)
+{
+    _responses = fromJSON(json);
 }
 
 
