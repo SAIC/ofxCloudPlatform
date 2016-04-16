@@ -39,3 +39,4 @@
 
 
 namespace ofxCloudPlatform = ofx::CloudPlatform;
+namespace ofxGCP = ofx::CloudPlatform;
