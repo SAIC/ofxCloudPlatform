@@ -6,4 +6,4 @@ meta:
 	ADDON_URL = http://github.com/bakercp/ofxCloudPlatform
 
 common:
-	ADDON_DEPENDENCIES = ofxHTTP ofxSSLManager ofxIO ofxMediaType ofxTaskQueue ofxNetworkUtils ofxGeo
+	ADDON_DEPENDENCIES = ofxHTTP ofxSSLManager ofxIO ofxMediaType ofxNetworkUtils ofxGeo
