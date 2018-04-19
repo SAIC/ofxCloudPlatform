@@ -12,12 +12,11 @@
 int main()
 {
     ofGLWindowSettings settings;
-    settings.width = 1280;
-    settings.height = 720;
+    settings.setSize(1280, 720);
     settings.setGLVersion(3, 2);
     settings.windowMode = OF_WINDOW;
     auto window = ofCreateWindow(settings);
     auto app = std::make_shared<ofApp>();
 
-    ofRunApp(app);
+    return ofRunApp(app);
 }

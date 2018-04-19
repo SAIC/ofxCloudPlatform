@@ -8,6 +8,7 @@
 #pragma once
 
 
+#include "ofJson.h"
 #include "ofImage.h"
 
 
@@ -30,20 +31,29 @@ public:
             /// \brief An unsepecified feature type.
             TYPE_UNSPECIFIED,
 
+            /// \brief Detect faces within the image.
+            FACE_DETECTION,
+            
+            /// \brief Detect geographic landmarks within the image.
+            LANDMARK_DETECTION,
+            
+            /// \brief Detect company logos within the image.
+            LOGO_DETECTION,
+
             /// \brief Execute Image Content Analysis on the entire image and return.
             LABEL_DETECTION,
 
-            /// \brief 	Perform Optical Character Recognition (OCR) on text within the image.
+            /// \brief Run text detection / optical character recognition (OCR).
+            ///
+            /// Text detection is optimized for areas of text within a larger
+            /// image; if the image is a document, use DOCUMENT_TEXT_DETECTION instead.
             TEXT_DETECTION,
 
-            /// \brief Detect faces within the image.
-            FACE_DETECTION,
-
-            /// \brief Detect geographic landmarks within the image.
-            LANDMARK_DETECTION,
-
-            /// \brief Detect company logos within the image.
-            LOGO_DETECTION,
+            /// \brief Run dense text document OCR.
+            ///
+            /// Takes precedence when both DOCUMENT_TEXT_DETECTION and
+            /// TEXT_DETECTION are present.
+            DOCUMENT_TEXT_DETECTION,
 
             /// \brief Determine image safe search properties on the image.
             SAFE_SEARCH_DETECTION,
@@ -51,7 +61,14 @@ public:
             /// \brief Compute a set of properties about the image.
             ///
             /// These properties include things such as the image's dominant colors.
-            IMAGE_PROPERTIES
+            IMAGE_PROPERTIES,
+            
+            /// \brief Cropping hints.
+            CROP_HINTS,
+            
+            /// \brief Web detection.
+            WEB_DETECTION
+            
         };
 
         enum

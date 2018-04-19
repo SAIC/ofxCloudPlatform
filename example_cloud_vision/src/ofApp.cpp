@@ -10,28 +10,25 @@
 
 void ofApp::setup()
 {
-    using namespace ofxCloudPlatform;
-
-    image.load("faulkner.jpg");
+    image.load("sunbeamkitties.jpg");
 
     // Load the service account credentials. Get service account credentials
     // here: https://cloud.google.com/vision/docs/auth-template/cloud-api-auth#set_up_a_service_account
-    auto credentials = ServiceAccountCredentials::fromFile("service-account-credentials.json");
+    auto credentials = ofxGCP::ServiceAccountCredentials::fromFile("motorola-wearables-6bc5a9f098e7.json");
 
-    // Initialize a 
-    VisionClient client(credentials);
+    // Initialize a vision client.
+    ofxGCP::VisionClient client(credentials);
 
-    auto response = client.annotate(VisionRequestItem(image.getPixels()));
-
-    if (response->isSuccess())
+    try
     {
-        annotations = response->responses()[0];
+        ofxGCP::VisionRequestItem request(image.getPixels());
+        request.addAllFeatures();
+        
+        annotations = client.annotate(request);
     }
-    else
+    catch (const std::exception& exc)
     {
-        std::cout << ">>" << response->getStatus() << "<<" << std::endl;
-        ofLogError() << response->getBuffer();
-        ofLogError() << response->error();
+        ofLogError() << exc.what();
     }
 }
 
@@ -44,7 +41,7 @@ void ofApp::update()
 void ofApp::draw()
 {
     image.draw(0, 0);
-    ofxCloudPlatform::VisionDebug::draw(annotations);
+    ofxGCP::VisionDebug::draw(annotations);
 }
 
 

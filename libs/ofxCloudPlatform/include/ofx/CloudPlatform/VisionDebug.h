@@ -35,7 +35,6 @@ public:
                      float height = 20);
 
     static void draw(const FaceAnnotation::Landmark& landmark);
-
     static void draw(const FaceAnnotation& annotation);
     static void draw(const EntityAnnotation& annotation);
     static void draw(const SafeSearchAnnotation& annotation);
@@ -43,6 +42,8 @@ public:
     static void draw(const std::vector<FaceAnnotation>& annotations);
     static void draw(const std::vector<EntityAnnotation>& annotations);
     static void draw(const AnnotateImageResponse& response);
+    static void draw(const std::vector<AnnotateImageResponse>& responses);
+    
 private:
     VisionDebug() = delete;
     ~VisionDebug() = delete;

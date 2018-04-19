@@ -9,6 +9,7 @@
 
 
 #include <string>
+#include "ofJson.h"
 #include "ofConstants.h"
 #include "ofx/HTTP/OAuth20RequestFilter.h"
 #include "ofx/HTTP/PostRequest.h"
@@ -202,8 +203,8 @@ public:
 
     virtual ~ServiceAccountTokenFilter();
 
-    void requestFilter(HTTP::BaseRequest& request,
-                       HTTP::Context& context) override;
+    void requestFilter(HTTP::Context& context,
+                       HTTP::Request& request) const override;
 
     void setCredentials(const ServiceAccountCredentials& credentials);
 
@@ -216,7 +217,7 @@ public:
 private:
     ServiceAccountCredentials _credentials;
 
-    ServiceAccountToken _token;
+    mutable ServiceAccountToken _token;
 
     mutable std::mutex _mutex;
 

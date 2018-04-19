@@ -8,7 +8,8 @@
 #pragma once
 
 
-#include "json.hpp"
+#include <unordered_map>
+#include "ofJson.h"
 #include "ofColor.h"
 #include "ofPolyline.h"
 #include "ofLog.h"
@@ -120,7 +121,8 @@ public:
     /// Range [0, 1].
     ///
     /// \returns the accuracy of the entity detection in an image.
-    float confidence() const;
+    /// \deprected
+    OF_DEPRECATED_MSG("Use score instead.", float confidence() const);
 
     /// \brief The relevancy of the ICA (Image Content Annotation) label to the image.
     ///
@@ -232,10 +234,10 @@ public:
 
 
         Landmark();
-        Landmark(Type type, const ofVec3f& position);
+        Landmark(Type type, const glm::vec3& position);
         Type type() const;
         std::string name() const;
-        ofVec3f position() const;
+        glm::vec3 position() const;
 
         /// \brief Create an instance from JSON.
         /// \param json The JSON to use.
@@ -250,7 +252,7 @@ public:
     private:
         Type _type = Type::UNKNOWN_LANDMARK;
         std::string _name;
-        ofVec3f _position;
+        glm::vec3 _position;
 
     };
 
@@ -425,6 +427,10 @@ public:
     /// \returns the Likelihood.
     Likelihood violence() const;
 
+    /// \brief Racy likelihood.
+    /// \returns the Likelihood.
+    Likelihood racy() const;
+
     /// \brief Create an instance from JSON.
     /// \param json The JSON to use.
     /// \returns an instance of the object.
@@ -442,6 +448,9 @@ private:
 
     /// \brief Violence likelihood.
     Likelihood _violence;
+
+    /// \brief Racy likelihood.
+    Likelihood _racy;
 
 };
 
@@ -507,6 +516,74 @@ private:
     std::vector<ColorInfo> _dominantColors;
 
 };
+   
+  
+/// \brief Single crop hint that is used to generate a new crop when serving an image.
+/// \sa https://cloud.google.com/vision/docs/reference/rest/v1/images/annotate#CropHint
+class CropHint
+{
+public:
+    /// \brief Create a CropHint.
+    CropHint();
+    
+    /// \brief Destroy the CropHint.
+    ~CropHint();
+    
+    /// \returns the of dominant colors and their corresponding scores.
+    ofPolyline boundingPoly() const;
+    
+    /// \returns Confidence of this being a salient region. Range [0, 1].
+    float confidence() const;
+    
+    /// \returns Fraction of importance of this salient region with respect to the original image.
+    float importanceFraction() const;
+
+    /// \brief Create an instance from JSON.
+    /// \param json The JSON to use.
+    /// \returns an instance of the object.
+    static CropHint fromJSON(const ofJson& json);
+
+private:
+    /// \brief The bounding polygon for the crop region.
+    ///
+    /// The coordinates of the bounding box are in the original image's scale,
+    /// as returned in ImageParams.
+    ofPolyline _boundingPoly;
+    
+    /// \brief Confidence of this being a salient region. Range [0, 1].
+    float _confidence = 0.0;
+    
+    /// \brief Fraction of importance of this salient region with respect to the original image.
+    float _importanceFraction = 0.0;
+};
+    
+    
+/// \brief Set of crop hints that are used to generate new crops when serving images.
+/// \sa https://cloud.google.com/vision/docs/reference/rest/v1/images/annotate#CropHintsAnnotation
+class CropHintsAnnotation
+{
+public:
+    /// \brief Create a default CropHintsAnnotation.
+    CropHintsAnnotation();
+    
+    /// \brief Destroy the CropHintsAnnotation.
+    virtual ~CropHintsAnnotation();
+    
+    /// \returns the crop hints.
+    std::vector<CropHint> cropHints() const;
+
+    /// \brief Create an instance from JSON.
+    /// \param json The JSON to use.
+    /// \returns an instance of the object.
+    static CropHintsAnnotation fromJSON(const ofJson& json);
+    
+private:
+    /// \brief dominant colors and their corresponding scores.
+    std::vector<CropHint> _cropHints;
+
+};
+
+    
 
 
 } } // namespace ofx::CloudPlatform

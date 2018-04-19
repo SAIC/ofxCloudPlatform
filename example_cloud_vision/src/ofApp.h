@@ -12,17 +12,17 @@
 #include "ofxCloudPlatform.h"
 
 
-class ofApp : public ofBaseApp
+class ofApp: public ofBaseApp
 {
 public:
-    void setup();
-    void update();
-    void draw();
+    void setup() override;
+    void update() override;
+    void draw() override;
 
-    void keyPressed(int key);
+    void keyPressed(int key) override;
 
     ofImage image;
-    ofxCloudPlatform::AnnotateImageResponse annotations;
-    ofxCloudPlatform::VisionClient client;
+    std::vector<ofxGCP::AnnotateImageResponse> annotations;
+    ofxGCP::VisionClient client;
 
 };

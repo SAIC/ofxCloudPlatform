@@ -165,5 +165,12 @@ void VisionDebug::draw(const AnnotateImageResponse& response)
     draw(response.imagePropertiesAnnotation());
 }
 
+    
+void VisionDebug::draw(const std::vector<AnnotateImageResponse>& responses)
+{
+    for (auto& response: responses)
+        draw(response);
+}
+
 
 } } // namespace ofx::CloudPlatform

@@ -8,8 +8,6 @@
 #pragma once
 
 
-#include "ofx/HTTP/BaseClient.h"
-#include "ofx/HTTP/BaseResponse.h"
 #include "ofx/CloudPlatform/VisionAnnotations.h"
 #include "ofx/CloudPlatform/VisionRequest.h"
 
@@ -31,6 +29,7 @@ public:
     const std::vector<EntityAnnotation>& textAnnotations() const;
     const SafeSearchAnnotation& safeSearchAnnotation() const;
     const ImagePropertiesAnnotation& imagePropertiesAnnotation() const;
+    const CropHintsAnnotation& cropHintsAnnotation() const;
 
     static AnnotateImageResponse fromJSON(const ofJson& json);
 
@@ -42,33 +41,7 @@ private:
     std::vector<EntityAnnotation> _textAnnotations;
     SafeSearchAnnotation _safeSearchAnnotation;
     ImagePropertiesAnnotation _imagePropertiesAnnotation;
-
-};
-
-
-class VisionResponse: public HTTP::BufferedResponse<VisionRequest>
-{
-public:
-    using BufferedResponse<VisionRequest>::BufferedResponse;
-
-    /// \brief Destroy a VisionResponse.
-    virtual ~VisionResponse();
-
-    std::vector<AnnotateImageResponse> responses() const;
-
-    static std::vector<AnnotateImageResponse> fromJSON(const ofJson& json);
-
-protected:
-    virtual void parseBuffer() override;
-
-    /// \brief Subclasses can further parse JSON data.
-    /// \param json The JSON Data to parse.
-    virtual void parseJSON(const ofJson& json);
-
-private:
-    std::vector<AnnotateImageResponse> _responses;
-
-    friend class HTTP::BaseClient;
+    CropHintsAnnotation _cropHintsAnnotation;
 
 };
 

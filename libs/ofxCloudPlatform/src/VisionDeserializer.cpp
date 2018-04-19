@@ -17,7 +17,7 @@ bool VisionDeserializer::fromJSON(const ofJson& json, ofPolyline& polyline)
     polyline.clear();
     for (const auto& vertex: json["vertices"])
     {
-        ofVec2f _vertex;
+        glm::vec3 _vertex;
         fromJSON(vertex, _vertex);
         polyline.addVertex(_vertex);
     }
@@ -25,25 +25,7 @@ bool VisionDeserializer::fromJSON(const ofJson& json, ofPolyline& polyline)
 }
 
 
-bool VisionDeserializer::fromJSON(const ofJson& json, ofVec2f& position)
-{
-    auto iter = json.cbegin();
-    while (iter != json.cend())
-    {
-        const auto& key = iter.key();
-        const auto& value = iter.value();
-        if (key == "x") position.x = value;
-        else if (key == "y") position.y = value;
-        else ofLogWarning() << "Unknown key " << key << " - " << json.dump(4);
-        ++iter;
-    }
-    
-    return true;
-}
-
-
-
-bool VisionDeserializer::fromJSON(const ofJson& json, ofVec3f& position)
+bool VisionDeserializer::fromJSON(const ofJson& json, glm::vec3& position)
 {
     auto iter = json.cbegin();
     while (iter != json.cend())

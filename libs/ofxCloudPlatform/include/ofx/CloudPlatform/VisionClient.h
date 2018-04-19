@@ -26,9 +26,9 @@ public:
     
     virtual ~VisionClient();
 
-    std::unique_ptr<VisionResponse> annotate(const VisionRequestItem& item);
+    std::vector<AnnotateImageResponse> annotate(const VisionRequestItem& item);
     
-    std::unique_ptr<VisionResponse> annotate(const std::vector<VisionRequestItem>& items);
+    std::vector<AnnotateImageResponse> annotate(const std::vector<VisionRequestItem>& items);
 
 };
 

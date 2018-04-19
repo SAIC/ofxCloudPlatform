@@ -9,9 +9,10 @@
 #include "ofFileUtils.h"
 #include "ofLog.h"
 #include "ofUtils.h"
-#include "ofx/HTTP/HTTPClient.h"
+#include "ofx/HTTP/Client.h"
 #include "ofx/HTTP/JSONWebToken.h"
 #include "ofx/HTTP/OAuth20Credentials.h"
+#include "Poco/Net/OAuth20Credentials.h"
 
 
 namespace ofx {
@@ -320,18 +321,15 @@ ServiceAccountToken ServiceAccountToken::fromJSON(const ofJson& json)
     {
         return ServiceAccountToken(*_tokenType, *_accessToken, *_expiresIn);
     }
-    else
-    {
-        auto _error = json.find("error");
-        auto _errorDescription = json.find("error_description");
 
-        std::string error = (_error != json.end()) ? *_error : "Unknown error.";
-        std::string errorDescription = (_errorDescription != json.end()) ? *_errorDescription : "Unknown reason.";
+    auto _error = json.find("error");
+    auto _errorDescription = json.find("error_description");
 
-        ofLogError("ServiceAccountToken::fromJSON") << "Error creating Token: " << error << ". " << errorDescription;
-        return ServiceAccountToken();
-    }
+    std::string error = (_error != json.end()) ? *_error : "Unknown error.";
+    std::string errorDescription = (_errorDescription != json.end()) ? *_errorDescription : "Unknown reason.";
 
+    ofLogError("ServiceAccountToken::fromJSON") << "Error creating Token: " << error << ". " << errorDescription;
+    return ServiceAccountToken();
 }
 
 
@@ -352,21 +350,21 @@ ServiceAccountTokenFilter::~ServiceAccountTokenFilter()
 }
 
 
-void ServiceAccountTokenFilter::requestFilter(HTTP::BaseRequest& request,
-                                              HTTP::Context& context)
+void ServiceAccountTokenFilter::requestFilter(HTTP::Context& context,
+                                              HTTP::Request& request) const 
 {
     std::unique_lock<std::mutex> lock(_mutex);
 
     if (_token.isExpired())
     {
-        HTTP::HTTPClient client;
+        HTTP::Client client;
+        ServiceAccountTokenRequest request(_credentials);
+        
+        auto response = client.execute(request);
 
-        auto response = client.executeBuffered(std::make_unique<ServiceAccountTokenRequest>(_credentials));
-
-        if (response->isSuccess())
+        if (response->isSuccess() && response->isJson())
         {
-            ofJson json = ofJson::parse(response->getBuffer());
-            _token = ServiceAccountToken::fromJSON(json);
+            _token = ServiceAccountToken::fromJSON(response->json());
 
             if (_token.isExpired())
             {
@@ -375,12 +373,12 @@ void ServiceAccountTokenFilter::requestFilter(HTTP::BaseRequest& request,
         }
         else
         {
-            throw Poco::Exception("Unable to update ServiceAccountToken: " + response->error());
+            throw Poco::Exception("Unable to update ServiceAccountToken: " + std::to_string(response->getStatus()) + " : " + response->getReason());
         }
     }
 
-    HTTP::OAuth20Credentials(_token.accessToken(),
-                             _token.tokenType()).authenticate(request);
+    Poco::Net::OAuth20Credentials(_token.accessToken(),
+                                  _token.tokenType()).authenticate(request);
 }
 
 void ServiceAccountTokenFilter::setCredentials(const ServiceAccountCredentials& credentials)

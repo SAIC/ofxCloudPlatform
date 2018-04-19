@@ -8,8 +8,8 @@
 #pragma once
 
 
-#include "ofx/HTTP/HTTPClient.h"
-#include "ofx/HTTP/BaseResponse.h"
+#include "ofx/HTTP/Client.h"
+#include "ofx/HTTP/Response.h"
 #include "ofx/CloudPlatform/ServiceAccount.h"
 
 
@@ -17,7 +17,7 @@ namespace ofx {
 namespace CloudPlatform {
 
 
-class PlatformClient: public HTTP::HTTPClient
+class PlatformClient: public HTTP::Client
 {
 public:
     PlatformClient();
@@ -30,6 +30,9 @@ public:
     const ServiceAccountCredentials& getCredentials() const;
 
 private:
+    virtual void requestFilter(HTTP::Context& context,
+                               HTTP::Request& request) const override;
+    
     ServiceAccountTokenFilter _serviceAccountTokenFilter;
 
 };

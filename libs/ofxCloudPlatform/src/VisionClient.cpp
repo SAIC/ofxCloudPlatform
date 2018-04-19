@@ -17,15 +17,48 @@ VisionClient::~VisionClient()
 }
 
 
-std::unique_ptr<VisionResponse> VisionClient::annotate(const VisionRequestItem& item)
+std::vector<AnnotateImageResponse> VisionClient::annotate(const VisionRequestItem& item)
 {
-    return executeBuffered<VisionRequest, VisionResponse>(std::make_unique<VisionRequest>(item));
+    std::vector<VisionRequestItem> items = { item };
+    return annotate(items);
 }
 
 
-std::unique_ptr<VisionResponse> VisionClient::annotate(const std::vector<VisionRequestItem>& items)
+std::vector<AnnotateImageResponse> VisionClient::annotate(const std::vector<VisionRequestItem>& items)
 {
-    return executeBuffered<VisionRequest, VisionResponse>(std::make_unique<VisionRequest>(items));
+    VisionRequest request(items);
+    auto response = execute(request);
+
+    if (!response->isSuccess() || !response->isJson())
+    {
+        throw Poco::Net::HTTPException(response->statusAndReason());
+    }
+ 
+    ofJson json = response->json();
+    
+    ofSaveJson(ofGetTimestampString() + ".json", json);
+    
+    std::vector<AnnotateImageResponse> responses;
+    
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+        
+        if (key == "responses")
+        {
+            for (const auto& response: value)
+            {
+                responses.push_back(AnnotateImageResponse::fromJSON(response));
+            }
+        }
+        else ofLogWarning("VisionClient::annotate") << "Unknown key: " << key;
+        
+        ++iter;
+    }
+    
+    return responses;
 }
     
 

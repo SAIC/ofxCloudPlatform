@@ -24,8 +24,7 @@ class VisionDeserializer
 {
 public:
     static bool fromJSON(const ofJson& json, ofPolyline& polyline);
-    static bool fromJSON(const ofJson& json, ofVec2f& position);
-    static bool fromJSON(const ofJson& json, ofVec3f& position);
+    static bool fromJSON(const ofJson& json, glm::vec3& position);
     static bool fromJSON(const ofJson& json, ofColor& color);
 private:
     VisionDeserializer() = delete;

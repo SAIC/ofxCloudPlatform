@@ -20,7 +20,6 @@ PlatformClient::PlatformClient(): PlatformClient(ServiceAccountCredentials())
 PlatformClient::PlatformClient(const ServiceAccountCredentials& credentials)
 {
     setCredentials(credentials);
-    addRequestFilter(&_serviceAccountTokenFilter);
 }
 
 
@@ -39,6 +38,13 @@ const ServiceAccountCredentials& PlatformClient::getCredentials() const
 {
     return _serviceAccountTokenFilter.getCredentials();
 }
-
+    
+    
+void PlatformClient::requestFilter(HTTP::Context& context,
+                                   HTTP::Request& request) const
+{
+    _serviceAccountTokenFilter.requestFilter(context, request);
+}
+    
 
 } } // namespace ofx::CloudPlatform

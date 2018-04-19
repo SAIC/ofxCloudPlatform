@@ -63,6 +63,12 @@ const ImagePropertiesAnnotation& AnnotateImageResponse::imagePropertiesAnnotatio
     return _imagePropertiesAnnotation;
 }
 
+    
+const CropHintsAnnotation& AnnotateImageResponse::cropHintsAnnotation() const
+{
+    return _cropHintsAnnotation;
+}
+    
 
 AnnotateImageResponse AnnotateImageResponse::fromJSON(const ofJson& json)
 {
@@ -106,72 +112,16 @@ AnnotateImageResponse AnnotateImageResponse::fromJSON(const ofJson& json)
         {
             annotation._imagePropertiesAnnotation = ImagePropertiesAnnotation::fromJSON(value);
         }
-        else ofLogWarning("VisionResponse::bufferStream") << "Unknown key: " << key;
+        else if (key == "cropHintsAnnotation")
+        {
+            annotation._cropHintsAnnotation = CropHintsAnnotation::fromJSON(value);
+        }
+        else ofLogWarning("AnnotateImageResponse::fromJSON") << "Unknown key: " << key;
 
         ++iter;
     }
 
     return annotation;
-}
-
-
-VisionResponse::~VisionResponse()
-{
-}
-
-
-std::vector<AnnotateImageResponse> VisionResponse::responses() const
-{
-    return _responses;
-}
-
-
-std::vector<AnnotateImageResponse> VisionResponse::fromJSON(const ofJson& json)
-{
-    std::vector<AnnotateImageResponse> responses;
-
-    auto iter = json.cbegin();
-    while (iter != json.cend())
-    {
-        const auto& key = iter.key();
-        const auto& value = iter.value();
-
-        if (key == "responses")
-        {
-            for (const auto& response: value)
-            {
-                responses.push_back(AnnotateImageResponse::fromJSON(response));
-            }
-        }
-        else ofLogWarning("VisionResponse::bufferStream") << "Unknown key: " << key;
-
-        ++iter;
-    }
-
-    return responses;;
-}
-
-
-
-void VisionResponse::parseBuffer()
-{
-    ofJson json;
-
-    try
-    {
-        json = ofJson::parse(HTTP::BufferedResponse<VisionRequest>::getBuffer());
-        parseJSON(json);
-    }
-    catch (const std::exception& exc)
-    {
-        ofLogError("VisionResponse::parseBuffer") << "Unable to interpret data as json: " << exc.what();
-    }
-
-}
-
-void VisionResponse::parseJSON(const ofJson& json)
-{
-    _responses = fromJSON(json);
 }
 
 

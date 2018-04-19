@@ -209,7 +209,7 @@ FaceAnnotation::Landmark::Landmark()
 }
 
 
-FaceAnnotation::Landmark::Landmark(Type type, const ofVec3f& position):
+FaceAnnotation::Landmark::Landmark(Type type, const glm::vec3& position):
     _type(type),
     _name(LANDMARK_TYPE_STRINGS.find(Landmark::Type::UNKNOWN_LANDMARK)->second),
     _position(position)
@@ -229,7 +229,7 @@ std::string FaceAnnotation::Landmark::name() const
 }
 
 
-ofVec3f FaceAnnotation::Landmark::position() const
+glm::vec3 FaceAnnotation::Landmark::position() const
 {
     return _position;
 }
@@ -641,6 +641,12 @@ Likelihood SafeSearchAnnotation::violence() const
     return _violence;
 }
 
+    
+Likelihood SafeSearchAnnotation::racy() const
+{
+    return _racy;
+}
+
 
 SafeSearchAnnotation SafeSearchAnnotation::fromJSON(const ofJson& json)
 {
@@ -656,6 +662,7 @@ SafeSearchAnnotation SafeSearchAnnotation::fromJSON(const ofJson& json)
         else if (key == "spoof") annotation._spoof = Likelihood::fromString(value);
         else if (key == "medical") annotation._medical = Likelihood::fromString(value);
         else if (key == "violence") annotation._violence = Likelihood::fromString(value);
+        else if (key == "racy") annotation._racy = Likelihood::fromString(value);
         else ofLogWarning("SafeSearchAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
         ++iter;
     }
@@ -749,6 +756,97 @@ ImagePropertiesAnnotation ImagePropertiesAnnotation::fromJSON(const ofJson& json
 
     return annotation;
 }
+    
+    
+    
+CropHint::CropHint()
+{
+}
+    
 
+CropHint::~CropHint()
+{
+}
+
+
+ofPolyline CropHint::boundingPoly() const
+{
+    return _boundingPoly;
+}
+    
+
+float CropHint::confidence() const
+{
+    return _confidence;
+}
+
+    
+float CropHint::importanceFraction() const
+{
+    return _importanceFraction;
+}
+
+    
+CropHint CropHint::fromJSON(const ofJson& json)
+{
+    CropHint annotation;
+    
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+        
+        if (key == "confidence") annotation._confidence = value;
+        else if (key == "importanceFraction") annotation._importanceFraction = value;
+        else if (key == "boundingPoly") VisionDeserializer::fromJSON(value, annotation._boundingPoly);
+        else ofLogWarning("CropHintsAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+        ++iter;
+    }
+    
+    return annotation;
+}
+    
+    
+    
+CropHintsAnnotation::CropHintsAnnotation()
+{
+}
+
+
+CropHintsAnnotation::~CropHintsAnnotation()
+{
+}
+    
+
+std::vector<CropHint> CropHintsAnnotation::cropHints() const
+{
+    return _cropHints;
+}
+
+
+CropHintsAnnotation CropHintsAnnotation::fromJSON(const ofJson& json)
+{
+    CropHintsAnnotation annotation;
+    
+    auto iter = json.cbegin();
+    while (iter != json.cend())
+    {
+        const auto& key = iter.key();
+        const auto& value = iter.value();
+        
+        if (key == "cropHints")
+        {
+            for (const auto& cropHint: value) annotation._cropHints.push_back(CropHint::fromJSON(cropHint));
+        }
+        else ofLogWarning("CropHintsAnnotation::fromJSON") << "Unknown key " << key << " - " << json.dump(4);
+
+        ++iter;
+    }
+    
+    return annotation;
+}
+
+    
 
 } } // namespace ofx::CloudPlatform

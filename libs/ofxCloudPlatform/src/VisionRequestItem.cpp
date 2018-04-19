@@ -19,11 +19,14 @@ const std::map<VisionRequestItem::Feature::Type, std::string> VisionRequestItem:
     { Type::TYPE_UNSPECIFIED, "TYPE_UNSPECIFIED" },
     { Type::LABEL_DETECTION, "LABEL_DETECTION" },
     { Type::TEXT_DETECTION, "TEXT_DETECTION" },
+    { Type::DOCUMENT_TEXT_DETECTION, "DOCUMENT_TEXT_DETECTION" },
     { Type::FACE_DETECTION, "FACE_DETECTION" },
     { Type::LANDMARK_DETECTION, "LANDMARK_DETECTION" },
     { Type::LOGO_DETECTION, "LOGO_DETECTION" },
     { Type::SAFE_SEARCH_DETECTION, "SAFE_SEARCH_DETECTION" },
-    { Type::IMAGE_PROPERTIES, "IMAGE_PROPERTIES" }
+    { Type::IMAGE_PROPERTIES, "IMAGE_PROPERTIES" },
+    { Type::CROP_HINTS, "CROP_HINTS" },
+    { Type::WEB_DETECTION, "WEB_DETECTION" }
 };
 
 
@@ -43,12 +46,14 @@ const ofJson& VisionRequestItem::Feature::json() const
 const std::vector<VisionRequestItem::Feature> VisionRequestItem::DEFAULT_FEATURES =
 {
     Feature(Feature::Type::LABEL_DETECTION),
-    Feature(Feature::Type::TEXT_DETECTION),
+    Feature(Feature::Type::DOCUMENT_TEXT_DETECTION),
     Feature(Feature::Type::FACE_DETECTION),
     Feature(Feature::Type::LANDMARK_DETECTION),
     Feature(Feature::Type::LOGO_DETECTION),
     Feature(Feature::Type::SAFE_SEARCH_DETECTION),
-    Feature(Feature::Type::IMAGE_PROPERTIES)
+    Feature(Feature::Type::IMAGE_PROPERTIES),
+    Feature(Feature::Type::CROP_HINTS),
+    Feature(Feature::Type::WEB_DETECTION)
 };
 
 
