@@ -35,9 +35,7 @@ std::vector<AnnotateImageResponse> VisionClient::annotate(const std::vector<Visi
     }
  
     ofJson json = response->json();
-    
-    ofSaveJson(ofGetTimestampString() + ".json", json);
-    
+        
     std::vector<AnnotateImageResponse> responses;
     
     auto iter = json.cbegin();

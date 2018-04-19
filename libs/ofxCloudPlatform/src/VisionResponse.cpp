@@ -69,6 +69,12 @@ const CropHintsAnnotation& AnnotateImageResponse::cropHintsAnnotation() const
     return _cropHintsAnnotation;
 }
     
+    
+ofJson AnnotateImageResponse::json() const
+{
+    return _json;
+}
+    
 
 AnnotateImageResponse AnnotateImageResponse::fromJSON(const ofJson& json)
 {
@@ -121,6 +127,7 @@ AnnotateImageResponse AnnotateImageResponse::fromJSON(const ofJson& json)
         ++iter;
     }
 
+    annotation._json = json;
     return annotation;
 }
 

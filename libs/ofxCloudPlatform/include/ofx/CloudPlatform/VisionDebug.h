@@ -28,6 +28,13 @@ public:
                      float height = 20);
 
     static void draw(const std::string& label,
+                     const std::string& value,
+                     float x = 0,
+                     float y = 0,
+                     float width = 300,
+                     float height = 20);
+
+    static void draw(const std::string& label,
                      const Likelihood& likelihood,
                      float x = 0,
                      float y = 0,
@@ -42,8 +49,15 @@ public:
     static void draw(const std::vector<FaceAnnotation>& annotations);
     static void draw(const std::vector<EntityAnnotation>& annotations);
     static void draw(const AnnotateImageResponse& response);
-    static void draw(const std::vector<AnnotateImageResponse>& responses);
     
+    static void draw(const AnnotateImageResponse& response,
+                     VisionRequestItem::Feature::Type filterType);
+
+    static void draw(const std::vector<AnnotateImageResponse>& responses);
+
+    static void draw(const std::vector<AnnotateImageResponse>& responses,
+                     VisionRequestItem::Feature::Type filterType);
+        
 private:
     VisionDebug() = delete;
     ~VisionDebug() = delete;

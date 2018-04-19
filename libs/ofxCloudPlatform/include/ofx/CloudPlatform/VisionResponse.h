@@ -31,8 +31,10 @@ public:
     const ImagePropertiesAnnotation& imagePropertiesAnnotation() const;
     const CropHintsAnnotation& cropHintsAnnotation() const;
 
-    static AnnotateImageResponse fromJSON(const ofJson& json);
+    /// \returns the raw json.
+    ofJson json() const;
 
+    static AnnotateImageResponse fromJSON(const ofJson& json);
 private:
     std::vector<FaceAnnotation> _faceAnnotations;
     std::vector<EntityAnnotation> _landmarkAnnotations;
@@ -43,6 +45,8 @@ private:
     ImagePropertiesAnnotation _imagePropertiesAnnotation;
     CropHintsAnnotation _cropHintsAnnotation;
 
+    /// \brief The raw json.
+    ofJson _json;
 };
 
 
