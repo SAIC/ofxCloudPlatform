@@ -10,7 +10,7 @@
 
 void ofApp::setup()
 {
-    image.load("sunbeamkitties.jpg");
+    image.load("faulkner.jpg");
 
     // Load the service account credentials. Get service account credentials
     // here: https://cloud.google.com/vision/docs/auth-template/cloud-api-auth#set_up_a_service_account
